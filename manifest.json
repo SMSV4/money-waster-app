@@ -1,0 +1,18 @@
+{
+  "name": "Money Waster",
+  "short_name": "MoneyWaster",
+  "description": "The ultimate luxury clicker game to waste coins and conquer the leaderboard",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23141418' stroke='%23f59e0b' stroke-width='6'/><text x='50' y='64' font-size='42' font-family='sans-serif' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>W</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
