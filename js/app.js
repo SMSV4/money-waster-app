@@ -1,31 +1,34 @@
-import { COUNTRIES, getCountryByCode } from './countries.js';
-import { LANGUAGES, TRANSLATIONS, t, getRandomQuote } from './i18n.js';
-import { state } from './state.js';
-import { getLeaderboardData } from './leaderboard.js';
-import { sounds } from './audio.js';
-
 const AVATARS = ['👑', '🔥', '💎', '🚀', '🦁', '🐉', '🤑', '⚡'];
 
 class App {
   constructor() {
     this.currentLeaderboardTab = 'world';
     this.selectedSetupAvatar = state.avatar || '👑';
+    this.lastClickTime = 0;
+    this.comboStreak = 0;
+    this.speedGlowTimer = null;
     this.initElements();
     this.bindEvents();
     this.render();
     state.subscribe(() => this.render());
+    this.registerServiceWorker();
+  }
+
+  registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
   }
 
   initElements() {
-    // Screens
     this.setupScreen = document.getElementById('setup-screen');
     this.gameScreen = document.getElementById('game-screen');
 
-    // Setup elements
     this.appTitle = document.getElementById('app-title');
     this.setupSubtitle = document.getElementById('setup-subtitle');
     this.nickInput = document.getElementById('nick-input');
-    this.nickHint = document.getElementById('nick-hint');
     this.charCount = document.getElementById('char-count');
     this.setupCountryBtn = document.getElementById('setup-country-btn');
     this.setupCountryText = document.getElementById('setup-country-text');
@@ -36,7 +39,6 @@ class App {
     this.startGameBtn = document.getElementById('start-game-btn');
     this.setupFooterHint = document.getElementById('setup-footer-hint');
 
-    // Game elements
     this.menuBtn = document.getElementById('menu-btn');
     this.ratingPill = document.getElementById('rating-pill');
     this.ratingPillText = document.getElementById('rating-pill-text');
@@ -47,7 +49,6 @@ class App {
     this.wasteBtn = document.getElementById('waste-btn');
     this.wasteBtnText = document.getElementById('waste-btn-text');
 
-    // Modals
     this.leaderboardModal = document.getElementById('leaderboard-modal');
     this.leaderboardTitle = document.getElementById('leaderboard-title');
     this.leaderboardClose = document.getElementById('leaderboard-close');
@@ -87,11 +88,16 @@ class App {
     this.avatarModalTitle = document.getElementById('avatar-modal-title');
     this.avatarModalGrid = document.getElementById('avatar-modal-grid');
 
-    // Drawer
     this.drawerOverlay = document.getElementById('drawer-overlay');
     this.drawerAvatar = document.getElementById('drawer-avatar');
     this.drawerNick = document.getElementById('drawer-nick');
     this.drawerMeta = document.getElementById('drawer-meta');
+    this.drawerSoundBtn = document.getElementById('drawer-sound-btn');
+    this.drawerSoundText = document.getElementById('drawer-sound-text');
+    this.drawerSoundStatus = document.getElementById('drawer-sound-status');
+    this.drawerHapticsBtn = document.getElementById('drawer-haptics-btn');
+    this.drawerHapticsText = document.getElementById('drawer-haptics-text');
+    this.drawerHapticsStatus = document.getElementById('drawer-haptics-status');
     this.drawerRatingBtn = document.getElementById('drawer-rating-btn');
     this.drawerTopUpBtn = document.getElementById('drawer-topup-btn');
     this.drawerLangBtn = document.getElementById('drawer-lang-btn');
@@ -101,140 +107,447 @@ class App {
   }
 
   bindEvents() {
-    // Setup Screen Events
-    this.nickInput.addEventListener('input', () => {
-      const val = this.nickInput.value;
-      const remaining = 16 - val.length;
-      this.charCount.textContent = `${Math.max(0, remaining)} characters remaining`;
-      this.startGameBtn.disabled = val.trim().length < 3;
-    });
+    if (this.nickInput) {
+      this.nickInput.addEventListener('input', () => {
+        const val = this.nickInput.value;
+        const remaining = 16 - val.length;
+        if (this.charCount) {
+          this.charCount.textContent = `${Math.max(0, remaining)} characters remaining`;
+        }
+        if (this.startGameBtn) {
+          this.startGameBtn.disabled = val.trim().length < 3;
+        }
+      });
+      this.nickInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !this.startGameBtn.disabled) {
+          this.startGameBtn.click();
+        }
+      });
+    }
 
-    this.setupCountryBtn.addEventListener('click', () => this.openCountryModal());
-    this.setupLangBtn.addEventListener('click', () => this.openLangModal());
+    if (this.setupCountryBtn) {
+      this.setupCountryBtn.addEventListener('click', () => {
+        haptics.light();
+        this.openCountryModal();
+      });
+    }
+    if (this.setupLangBtn) {
+      this.setupLangBtn.addEventListener('click', () => {
+        haptics.light();
+        this.openLangModal();
+      });
+    }
+    if (this.startGameBtn) {
+      this.startGameBtn.addEventListener('click', () => {
+        haptics.light();
+        const nick = this.nickInput ? this.nickInput.value.trim() : '';
+        if (nick.length >= 3) {
+          state.setProfile(nick, state.country, state.language, this.selectedSetupAvatar);
+        }
+      });
+    }
 
-    this.startGameBtn.addEventListener('click', () => {
-      const nick = this.nickInput.value.trim();
-      if (nick.length >= 3) {
-        state.setProfile(nick, state.country, state.language, this.selectedSetupAvatar);
+    if (this.wasteBtn) {
+      let pointerHandled = false;
+      this.isWasteBtnPressed = false;
+
+      this.wasteBtn.addEventListener('pointerdown', (e) => {
+        pointerHandled = true;
+        this.isWasteBtnPressed = true;
+        if (this.wasteBtnRing) this.wasteBtnRing.classList.add('pressed');
+        this.handleWastePress(e);
+      });
+
+      const handleRelease = () => {
+        if (this.isWasteBtnPressed) {
+          this.isWasteBtnPressed = false;
+          if (this.wasteBtnRing) this.wasteBtnRing.classList.remove('pressed');
+          haptics.mechRelease();
+        }
+      };
+
+      this.wasteBtn.addEventListener('pointerup', handleRelease);
+      this.wasteBtn.addEventListener('pointercancel', handleRelease);
+      this.wasteBtn.addEventListener('pointerleave', handleRelease);
+
+      this.wasteBtn.addEventListener('click', (e) => {
+        if (pointerHandled) {
+          pointerHandled = false;
+          return;
+        }
+        this.handleWastePress(e);
+      });
+    }
+    if (this.ratingPill) {
+      this.ratingPill.addEventListener('click', () => {
+        haptics.light();
+        this.openLeaderboardModal();
+      });
+    }
+    if (this.coinsPill) {
+      this.coinsPill.addEventListener('click', () => {
+        haptics.light();
+        this.openTopUpModal();
+      });
+    }
+    if (this.menuBtn) {
+      this.menuBtn.addEventListener('click', () => {
+        haptics.light();
+        this.openDrawer();
+      });
+    }
+
+    if (this.drawerOverlay) {
+      this.drawerOverlay.addEventListener('click', (e) => {
+        if (e.target === this.drawerOverlay) this.closeDrawer();
+      });
+    }
+    if (this.drawerSoundBtn) {
+      this.drawerSoundBtn.addEventListener('click', () => {
+        haptics.light();
+        state.toggleSound();
+      });
+    }
+    if (this.drawerHapticsBtn) {
+      this.drawerHapticsBtn.addEventListener('click', () => {
+        state.toggleHaptics();
+        haptics.light();
+      });
+    }
+    if (this.drawerRatingBtn) {
+      this.drawerRatingBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openLeaderboardModal();
+      });
+    }
+    if (this.drawerTopUpBtn) {
+      this.drawerTopUpBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openTopUpModal();
+      });
+    }
+    if (this.drawerLangBtn) {
+      this.drawerLangBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openLangModal();
+      });
+    }
+    if (this.drawerCountryBtn) {
+      this.drawerCountryBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openCountryModal();
+      });
+    }
+    if (this.drawerAvatarBtn) {
+      this.drawerAvatarBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openAvatarModal();
+      });
+    }
+    if (this.drawerResetBtn) {
+      this.drawerResetBtn.addEventListener('click', () => {
+        haptics.warning();
+        this.closeDrawer();
+        state.resetProfile();
+        if (this.nickInput) this.nickInput.value = '';
+        this.selectedSetupAvatar = '👑';
+        this.renderAvatarsGrid();
+      });
+    }
+
+    if (this.leaderboardClose) {
+      this.leaderboardClose.addEventListener('click', () => this.closeModal(this.leaderboardModal));
+    }
+    if (this.tabWorld) {
+      this.tabWorld.addEventListener('click', () => {
+        haptics.light();
+        this.currentLeaderboardTab = 'world';
+        this.renderLeaderboard();
+      });
+    }
+    if (this.tabCountry) {
+      this.tabCountry.addEventListener('click', () => {
+        haptics.light();
+        this.currentLeaderboardTab = 'country';
+        this.renderLeaderboard();
+      });
+    }
+
+    if (this.paywallClose) {
+      this.paywallClose.addEventListener('click', () => this.closeModal(this.paywallModal));
+    }
+    if (this.paywall100Btn) {
+      this.paywall100Btn.addEventListener('click', () => {
+        haptics.heavy();
+        sounds.playTopUp();
+        state.addCoins(100);
+        this.closeModal(this.paywallModal);
+      });
+    }
+    if (this.paywall500Btn) {
+      this.paywall500Btn.addEventListener('click', () => {
+        haptics.heavy();
+        sounds.playTopUp();
+        state.addCoins(500);
+        this.closeModal(this.paywallModal);
+      });
+    }
+
+    if (this.topUpClose) {
+      this.topUpClose.addEventListener('click', () => this.closeModal(this.topUpModal));
+    }
+    if (this.topUpCancelBtn) {
+      this.topUpCancelBtn.addEventListener('click', () => this.closeModal(this.topUpModal));
+    }
+    if (this.topUpAddBtn) {
+      this.topUpAddBtn.addEventListener('click', () => {
+        haptics.heavy();
+        sounds.playTopUp();
+        state.addCoins(100);
+        this.closeModal(this.topUpModal);
+      });
+    }
+
+    if (this.countryClose) {
+      this.countryClose.addEventListener('click', () => this.closeModal(this.countryModal));
+    }
+    if (this.countrySearch) {
+      this.countrySearch.addEventListener('input', (e) => this.renderCountryList(e.target.value));
+    }
+
+    if (this.langClose) {
+      this.langClose.addEventListener('click', () => this.closeModal(this.langModal));
+    }
+    if (this.langSearch) {
+      this.langSearch.addEventListener('input', (e) => this.renderLangList(e.target.value));
+    }
+
+    if (this.avatarModalClose) {
+      this.avatarModalClose.addEventListener('click', () => this.closeModal(this.avatarModal));
+    }
+
+    [this.leaderboardModal, this.paywallModal, this.topUpModal, this.countryModal, this.langModal, this.avatarModal].forEach(modal => {
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) this.closeModal(modal);
+        });
       }
     });
-
-    // Game Screen Events
-    this.wasteBtn.addEventListener('click', (e) => this.handleWasteClick(e));
-    this.ratingPill.addEventListener('click', () => this.openLeaderboardModal());
-    this.coinsPill.addEventListener('click', () => this.openTopUpModal());
-    this.menuBtn.addEventListener('click', () => this.openDrawer());
-
-    // Drawer Events
-    this.drawerOverlay.addEventListener('click', (e) => {
-      if (e.target === this.drawerOverlay) this.closeDrawer();
-    });
-    this.drawerRatingBtn.addEventListener('click', () => {
-      this.closeDrawer();
-      this.openLeaderboardModal();
-    });
-    this.drawerTopUpBtn.addEventListener('click', () => {
-      this.closeDrawer();
-      this.openTopUpModal();
-    });
-    this.drawerLangBtn.addEventListener('click', () => {
-      this.closeDrawer();
-      this.openLangModal();
-    });
-    this.drawerCountryBtn.addEventListener('click', () => {
-      this.closeDrawer();
-      this.openCountryModal();
-    });
-    this.drawerAvatarBtn.addEventListener('click', () => {
-      this.closeDrawer();
-      this.openAvatarModal();
-    });
-    this.drawerResetBtn.addEventListener('click', () => {
-      this.closeDrawer();
-      state.resetProfile();
-      this.nickInput.value = '';
-    });
-
-    // Leaderboard Modal Events
-    this.leaderboardClose.addEventListener('click', () => this.closeModal(this.leaderboardModal));
-    this.tabWorld.addEventListener('click', () => {
-      this.currentLeaderboardTab = 'world';
-      this.renderLeaderboard();
-    });
-    this.tabCountry.addEventListener('click', () => {
-      this.currentLeaderboardTab = 'country';
-      this.renderLeaderboard();
-    });
-
-    // Paywall Modal Events
-    this.paywallClose.addEventListener('click', () => this.closeModal(this.paywallModal));
-    this.paywall100Btn.addEventListener('click', () => {
-      state.addCoins(100);
-      sounds.playTopUp();
-      this.closeModal(this.paywallModal);
-    });
-    this.paywall500Btn.addEventListener('click', () => {
-      state.addCoins(500);
-      sounds.playTopUp();
-      this.closeModal(this.paywallModal);
-    });
-
-    // TopUp Modal Events
-    this.topUpClose.addEventListener('click', () => this.closeModal(this.topUpModal));
-    this.topUpCancelBtn.addEventListener('click', () => this.closeModal(this.topUpModal));
-    this.topUpAddBtn.addEventListener('click', () => {
-      state.addCoins(100);
-      sounds.playTopUp();
-      this.closeModal(this.topUpModal);
-    });
-
-    // Country Search
-    this.countryClose.addEventListener('click', () => this.closeModal(this.countryModal));
-    this.countrySearch.addEventListener('input', (e) => this.renderCountryList(e.target.value));
-
-    // Language Search
-    this.langClose.addEventListener('click', () => this.closeModal(this.langModal));
-    this.langSearch.addEventListener('input', (e) => this.renderLangList(e.target.value));
-
-    // Avatar Modal
-    this.avatarModalClose.addEventListener('click', () => this.closeModal(this.avatarModal));
   }
 
-  handleWasteClick(event) {
+  handleWastePress(event) {
     if (state.coins > 0) {
-      sounds.playCoinClick();
+      const now = performance.now();
+      const delta = now - this.lastClickTime;
+      if (delta < 600) {
+        this.comboStreak = Math.min(10, this.comboStreak + 1);
+      } else {
+        this.comboStreak = 1;
+      }
+      this.lastClickTime = now;
+
+      // Speed glow effect on rating pill during fast tapping
+      if (this.ratingPill) {
+        if (this.comboStreak >= 2) {
+          this.ratingPill.classList.add('speed-glow');
+          clearTimeout(this.speedGlowTimer);
+          this.speedGlowTimer = setTimeout(() => {
+            if (this.ratingPill) this.ratingPill.classList.remove('speed-glow');
+            this.comboStreak = 0;
+          }, 700);
+        }
+      }
+
+      haptics.mechPress();
       const quote = getRandomQuote(state.language);
       state.spendCoin(quote);
 
-      // Button animation
-      this.wasteBtnRing.classList.remove('clicked');
-      void this.wasteBtnRing.offsetWidth;
-      this.wasteBtnRing.classList.add('clicked');
+      if (this.wasteBtnRing) {
+        this.wasteBtnRing.classList.remove('clicked');
+        void this.wasteBtnRing.offsetWidth;
+        this.wasteBtnRing.classList.add('clicked');
+      }
 
-      // Spawn Particle
-      this.spawnParticle(event);
+      this.spawnClickEffects(event);
     } else {
       sounds.playLimitWarning();
+      haptics.warning();
       this.openPaywallModal();
     }
   }
 
-  spawnParticle(event) {
-    const particle = document.createElement('div');
-    particle.className = 'floating-particle';
-    particle.textContent = '+1 WASTE';
-    const randX = (Math.random() - 0.5) * 60;
-    particle.style.setProperty('--rand-x', randX);
+  handleWasteClick(event) {
+    this.handleWastePress(event);
+  }
 
-    const rect = this.wasteBtn.getBoundingClientRect();
-    const x = event ? (event.clientX || rect.left + rect.width / 2) : rect.left + rect.width / 2;
-    const y = event ? (event.clientY || rect.top + rect.height / 2) : rect.top + rect.height / 2;
+  spawnClickEffects(event) {
+    try {
+      const rect = this.wasteBtn ? this.wasteBtn.getBoundingClientRect() : { left: window.innerWidth / 2 - 40, top: window.innerHeight / 2 - 40, width: 80, height: 80 };
+      const touchX = event && event.touches && event.touches[0] ? event.touches[0].clientX : null;
+      const touchY = event && event.touches && event.touches[0] ? event.touches[0].clientY : null;
+      const changedX = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientX : null;
+      const changedY = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientY : null;
 
-    particle.style.left = `${x - 40}px`;
-    particle.style.top = `${y - 30}px`;
-    document.body.appendChild(particle);
+      const rawX = event && event.clientX ? event.clientX : (touchX || changedX);
+      const rawY = event && event.clientY ? event.clientY : (touchY || changedY);
 
-    setTimeout(() => particle.remove(), 800);
+      const startX = rawX || (rect.left + rect.width / 2);
+      const startY = rawY || (rect.top + rect.height / 2);
+
+      // 1. Spawn +1 floating text
+      this.spawnFloatingText(startX, startY);
+
+      // 2. Spawn tossed 3D coin to rating pill
+      this.spawnFlyingCoin(startX, startY);
+    } catch (e) {
+      console.error('Error spawning click effects:', e);
+    }
+  }
+
+  spawnFloatingText(startX, startY) {
+    try {
+      const particle = document.createElement('div');
+      particle.className = 'floating-particle';
+      particle.textContent = '+1';
+      particle.style.left = `${startX}px`;
+      particle.style.top = `${startY}px`;
+      document.body.appendChild(particle);
+
+      const randX = (Math.random() - 0.5) * 36;
+      const anim = particle.animate([
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.6)', opacity: 0 },
+        { transform: 'translate3d(-50%, calc(-50% - 20px), 0) scale(1.3)', opacity: 1, offset: 0.2 },
+        { transform: `translate3d(calc(-50% + ${randX}px), calc(-50% - 75px), 0) scale(1)`, opacity: 0, offset: 1.0 }
+      ], {
+        duration: 580,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => particle.remove();
+    } catch (e) {}
+  }
+
+  spawnFlyingCoin(startX, startY) {
+    try {
+      if (!this.ratingPill) return;
+      const targetRect = this.ratingPill.getBoundingClientRect();
+      const targetX = targetRect.left + targetRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2;
+
+      const isCombo = this.comboStreak >= 2;
+      // Slower initial float (800ms) with smooth acceleration down to 260ms on spam
+      const duration = Math.max(260, 800 - (this.comboStreak - 1) * 60);
+
+      const coinEl = document.createElement('div');
+      coinEl.className = `flying-coin-wrapper ${isCombo ? 'combo-streak' : ''}`;
+      coinEl.innerHTML = `
+        <div class="flying-coin-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#141418" stroke="#f59e0b" stroke-width="9"/>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="4,4"/>
+            <text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#f59e0b" text-anchor="middle">W</text>
+          </svg>
+        </div>
+      `;
+
+      document.body.appendChild(coinEl);
+
+      const tossApexY = Math.min(startY - 85, (startY + targetY) / 2 - 25);
+      const tossScatterX = startX + (Math.random() - 0.5) * 36;
+
+      const midX = (tossScatterX + targetX) / 2 + (Math.random() - 0.5) * 16;
+      const midY = (tossApexY + targetY) / 2 - 12;
+
+      const fullSpins = 2 + Math.floor(Math.random() * 2);
+      const totalDegY = fullSpins * 360;
+      const wobbleZ = (Math.random() - 0.5) * 18;
+
+      const anim = coinEl.animate([
+        {
+          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0.65) rotateY(0deg) rotateZ(0deg)`,
+          opacity: 0
+        },
+        {
+          transform: `translate3d(${tossScatterX * 0.35 + startX * 0.65 - 19}px, ${startY - 22}px, 0) scale(1.0) rotateY(90deg) rotateZ(${wobbleZ * 0.5}deg)`,
+          opacity: 1,
+          offset: 0.14
+        },
+        {
+          transform: `translate3d(${tossScatterX - 19}px, ${tossApexY - 19}px, 0) scale(1.25) rotateY(220deg) rotateZ(${wobbleZ}deg)`,
+          opacity: 1,
+          offset: 0.36
+        },
+        {
+          transform: `translate3d(${midX - 19}px, ${midY - 19}px, 0) scale(1.05) rotateY(${totalDegY * 0.68}deg) rotateZ(${wobbleZ * 0.4}deg)`,
+          opacity: 1,
+          offset: 0.68
+        },
+        {
+          transform: `translate3d(${targetX * 0.98 + startX * 0.02 - 19}px, ${targetY * 0.98 + startY * 0.02 - 19}px, 0) scale(0.65) rotateY(${totalDegY * 0.94}deg) rotateZ(0deg)`,
+          opacity: 0.95,
+          offset: 0.94
+        },
+        {
+          transform: `translate3d(${targetX - 19}px, ${targetY - 19}px, 0) scale(0.15) rotateY(${totalDegY}deg) rotateZ(0deg)`,
+          opacity: 0,
+          offset: 1.0
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.35, 0, 0.25, 1)',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => {
+        coinEl.remove();
+        state.incrementRating();
+        this.triggerRatingImpact(targetX, targetY);
+      };
+    } catch (e) {}
+  }
+
+  triggerRatingImpact(targetX, targetY) {
+    if (!this.ratingPill) return;
+
+    sounds.playRatingImpact();
+    haptics.coinImpact();
+
+    // Instant snappy pulse bounce and prolonged golden glow on rating pill
+    this.ratingPill.classList.remove('rating-pill-impact');
+    void this.ratingPill.offsetWidth;
+    this.ratingPill.classList.add('rating-pill-impact');
+
+    // Spawn 4 fast micro sparkles around target with silky smooth decay
+    for (let i = 0; i < 4; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'rating-sparkle';
+      sparkle.style.left = `${targetX}px`;
+      sparkle.style.top = `${targetY}px`;
+      document.body.appendChild(sparkle);
+
+      const angle = (i / 4) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const dist = 14 + Math.random() * 16;
+      const sparkX = Math.cos(angle) * dist;
+      const sparkY = Math.sin(angle) * dist;
+
+      const sparkAnim = sparkle.animate([
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.5)', opacity: 1 },
+        { transform: `translate3d(calc(-50% + ${sparkX}px), calc(-50% + ${sparkY}px), 0) scale(1.2)`, opacity: 0.9, offset: 0.3 },
+        { transform: `translate3d(calc(-50% + ${sparkX * 1.25}px), calc(-50% + ${sparkY * 1.25}px), 0) scale(0)`, opacity: 0, offset: 1.0 }
+      ], {
+        duration: 320,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'forwards'
+      });
+
+      sparkAnim.onfinish = () => sparkle.remove();
+    }
   }
 
   render() {
@@ -242,61 +555,90 @@ class App {
     const country = getCountryByCode(state.country);
 
     if (!state.isInitialized) {
-      this.setupScreen.classList.add('active');
-      this.gameScreen.classList.remove('active');
+      if (this.setupScreen) this.setupScreen.classList.add('active');
+      if (this.gameScreen) this.gameScreen.classList.remove('active');
     } else {
-      this.setupScreen.classList.remove('active');
-      this.gameScreen.classList.add('active');
+      if (this.setupScreen) this.setupScreen.classList.remove('active');
+      if (this.gameScreen) this.gameScreen.classList.add('active');
     }
 
-    // Setup texts
-    this.appTitle.textContent = 'MONEY WASTER';
-    this.setupSubtitle.textContent = t(lang, 'profileTitle');
-    this.nickInput.placeholder = t(lang, 'nickHint');
-    this.setupCountryText.textContent = `${t(lang, 'country')}: ${country.flag} ${country.name}`;
-    this.setupLangText.textContent = `${t(lang, 'language')}: ${LANGUAGES.find(l => l.code === lang)?.name || lang}`;
-    this.avatarLabel.textContent = t(lang, 'avatar');
-    this.startGameBtn.textContent = t(lang, 'start');
-    this.setupFooterHint.textContent = t(lang, 'setupHint');
+    if (this.appTitle) this.appTitle.textContent = 'MONEY WASTER';
+    if (this.setupSubtitle) this.setupSubtitle.textContent = t(lang, 'profileTitle');
+    if (this.nickInput) this.nickInput.placeholder = t(lang, 'nickHint');
+    if (this.setupCountryText) this.setupCountryText.textContent = `${t(lang, 'country')}: ${country.flag} ${country.name}`;
+    if (this.setupLangText) {
+      const langObj = LANGUAGES.find(l => l.code === lang);
+      this.setupLangText.textContent = `${t(lang, 'language')}: ${langObj ? langObj.name : lang}`;
+    }
+    if (this.avatarLabel) this.avatarLabel.textContent = t(lang, 'avatar');
+    if (this.startGameBtn) this.startGameBtn.textContent = t(lang, 'start');
+    if (this.setupFooterHint) this.setupFooterHint.textContent = t(lang, 'setupHint');
+    if (this.charCount && this.nickInput) {
+      const remaining = 16 - this.nickInput.value.length;
+      this.charCount.textContent = `${Math.max(0, remaining)} characters remaining`;
+    }
+
     this.renderAvatarsGrid();
 
-    // Game texts
-    this.ratingPillText.textContent = `${t(lang, 'rating')}: ${state.rating}`;
-    this.coinsPillText.textContent = `🪙 ${state.coins}`;
-    this.motivationalQuote.textContent = state.bannerText;
+    if (this.ratingPillText) this.ratingPillText.textContent = `${t(lang, 'rating')}: ${state.rating}`;
+    if (this.coinsPillText) this.coinsPillText.textContent = state.coins.toString();
+    if (this.motivationalQuote) this.motivationalQuote.textContent = state.bannerText;
 
-    // Drawer texts
-    this.drawerAvatar.textContent = state.avatar;
-    this.drawerNick.textContent = state.nick || 'Player';
-    this.drawerMeta.textContent = `${state.country} · ${state.language}`;
-    this.drawerRatingBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'rating');
-    this.drawerTopUpBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'topUpTitle');
-    this.drawerLangBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'appLanguage');
-    this.drawerCountryBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'country');
-    this.drawerAvatarBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'changeAvatar');
-    this.drawerResetBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'resetProfile');
+    if (this.drawerAvatar) this.drawerAvatar.textContent = state.avatar;
+    if (this.drawerNick) this.drawerNick.textContent = state.nick || 'Player';
+    if (this.drawerMeta) this.drawerMeta.textContent = `${state.country} · ${state.language}`;
+    if (this.drawerSoundText) this.drawerSoundText.textContent = t(lang, 'sound');
+    if (this.drawerSoundStatus) this.drawerSoundStatus.classList.toggle('active', Boolean(state.soundEnabled));
+    if (this.drawerHapticsText) this.drawerHapticsText.textContent = t(lang, 'haptics');
+    if (this.drawerHapticsStatus) this.drawerHapticsStatus.classList.toggle('active', Boolean(state.hapticsEnabled));
+    if (this.drawerRatingBtn) this.drawerRatingBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'rating');
+    if (this.drawerTopUpBtn) this.drawerTopUpBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'topUpTitle');
+    if (this.drawerLangBtn) this.drawerLangBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'appLanguage');
+    if (this.drawerCountryBtn) this.drawerCountryBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'country');
+    if (this.drawerAvatarBtn) this.drawerAvatarBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'changeAvatar');
+    if (this.drawerResetBtn) this.drawerResetBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'resetProfile');
 
-    // Modals translations
-    this.leaderboardTitle.textContent = t(lang, 'ratingTitle');
-    this.tabWorld.textContent = t(lang, 'world');
-    this.tabCountry.textContent = `${t(lang, 'countryTab')} · ${state.country}`;
+    if (this.leaderboardTitle) this.leaderboardTitle.textContent = t(lang, 'ratingTitle');
+    if (this.tabWorld) this.tabWorld.textContent = t(lang, 'world');
+    if (this.tabCountry) this.tabCountry.textContent = `${t(lang, 'countryTab')} · ${state.country}`;
 
-    this.paywallTitle.textContent = t(lang, 'paywallTitle');
-    this.paywallBody.textContent = t(lang, 'paywallBody');
-    this.paywall100Btn.querySelector('.package-amount').textContent = t(lang, 'coins100');
-    this.paywall100Tag.textContent = t(lang, 'popular');
-    this.paywall500Btn.querySelector('.package-amount').textContent = t(lang, 'coins500');
-    this.paywall500Tag.textContent = t(lang, 'valueDeal');
+    if (this.paywallTitle) {
+      const titleSpan = this.paywallTitle.querySelector('span');
+      if (titleSpan) titleSpan.textContent = t(lang, 'paywallTitle').replace('🚫 ', '');
+      else this.paywallTitle.textContent = t(lang, 'paywallTitle').replace('🚫 ', '');
+    }
+    if (this.paywallBody) this.paywallBody.textContent = t(lang, 'paywallBody');
+    if (this.paywall100Btn) {
+      const amtSpan = this.paywall100Btn.querySelector('.package-amount span');
+      if (amtSpan) amtSpan.textContent = t(lang, 'coins100');
+    }
+    if (this.paywall100Tag) {
+      const tagSpan = this.paywall100Tag.querySelector('span');
+      if (tagSpan) tagSpan.textContent = t(lang, 'popular').replace('🔥 ', '');
+    }
+    if (this.paywall500Btn) {
+      const amtSpan = this.paywall500Btn.querySelector('.package-amount span');
+      if (amtSpan) amtSpan.textContent = t(lang, 'coins500');
+    }
+    if (this.paywall500Tag) {
+      const tagSpan = this.paywall500Tag.querySelector('span');
+      if (tagSpan) tagSpan.textContent = t(lang, 'valueDeal').replace('💎 ', '');
+    }
 
-    this.topUpTitle.textContent = t(lang, 'topUpTitle');
-    this.topUpBody.textContent = t(lang, 'topUpBody');
-    this.topUpCancelBtn.textContent = t(lang, 'cancel');
-    this.topUpAddBtn.textContent = t(lang, 'add100Coins');
+    if (this.topUpTitle) this.topUpTitle.textContent = t(lang, 'topUpTitle');
+    if (this.topUpBody) this.topUpBody.textContent = t(lang, 'topUpBody');
+    if (this.topUpCancelBtn) this.topUpCancelBtn.textContent = t(lang, 'cancel');
+    if (this.topUpAddBtn) {
+      const addSpan = this.topUpAddBtn.querySelector('span');
+      if (addSpan) addSpan.textContent = t(lang, 'add100Coins');
+      else this.topUpAddBtn.textContent = t(lang, 'add100Coins');
+    }
 
-    this.avatarModalTitle.textContent = t(lang, 'avatar');
+    if (this.avatarModalTitle) this.avatarModalTitle.textContent = t(lang, 'avatar');
   }
 
   renderAvatarsGrid() {
+    if (!this.avatarsGrid) return;
     this.avatarsGrid.innerHTML = '';
     AVATARS.forEach((av) => {
       const btn = document.createElement('button');
@@ -304,6 +646,7 @@ class App {
       btn.textContent = av;
       btn.type = 'button';
       btn.addEventListener('click', () => {
+        haptics.light();
         this.selectedSetupAvatar = av;
         this.renderAvatarsGrid();
       });
@@ -320,15 +663,18 @@ class App {
     const lang = state.language;
     const data = getLeaderboardData(this.currentLeaderboardTab, state);
 
-    this.tabWorld.classList.toggle('active', this.currentLeaderboardTab === 'world');
-    this.tabCountry.classList.toggle('active', this.currentLeaderboardTab === 'country');
+    if (this.tabWorld) this.tabWorld.classList.toggle('active', this.currentLeaderboardTab === 'world');
+    if (this.tabCountry) this.tabCountry.classList.toggle('active', this.currentLeaderboardTab === 'country');
 
-    if (data.isLeader) {
-      this.leaderboardSubhead.textContent = t(lang, 'leader');
-    } else {
-      this.leaderboardSubhead.textContent = `${t(lang, 'moreTo')} ${data.moreNeeded} → #${data.targetRank}`;
+    if (this.leaderboardSubhead) {
+      if (data.isLeader) {
+        this.leaderboardSubhead.textContent = t(lang, 'leader');
+      } else {
+        this.leaderboardSubhead.textContent = `${t(lang, 'moreTo')} ${data.moreNeeded} → #${data.targetRank}`;
+      }
     }
 
+    if (!this.leaderboardList) return;
     this.leaderboardList.innerHTML = '';
     data.items.forEach((item) => {
       const row = document.createElement('div');
@@ -359,13 +705,16 @@ class App {
   }
 
   openCountryModal() {
-    this.countrySearch.value = '';
-    this.countrySearch.placeholder = t(state.language, 'search');
+    if (this.countrySearch) {
+      this.countrySearch.value = '';
+      this.countrySearch.placeholder = t(state.language, 'search');
+    }
     this.renderCountryList('');
     this.openModal(this.countryModal);
   }
 
   renderCountryList(query) {
+    if (!this.countryList) return;
     const q = query.toLowerCase().trim();
     const filtered = COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
 
@@ -375,6 +724,7 @@ class App {
       btn.className = `option-item ${state.country === c.code ? 'selected' : ''}`;
       btn.innerHTML = `<span>${c.flag} ${c.name}</span> <span style="opacity: 0.6">${c.code}</span>`;
       btn.addEventListener('click', () => {
+        haptics.light();
         state.setCountry(c.code);
         this.closeModal(this.countryModal);
       });
@@ -383,13 +733,16 @@ class App {
   }
 
   openLangModal() {
-    this.langSearch.value = '';
-    this.langSearch.placeholder = t(state.language, 'search');
+    if (this.langSearch) {
+      this.langSearch.value = '';
+      this.langSearch.placeholder = t(state.language, 'search');
+    }
     this.renderLangList('');
     this.openModal(this.langModal);
   }
 
   renderLangList(query) {
+    if (!this.langList) return;
     const q = query.toLowerCase().trim();
     const filtered = LANGUAGES.filter(l => l.name.toLowerCase().includes(q) || l.code.toLowerCase().includes(q));
 
@@ -399,6 +752,7 @@ class App {
       btn.className = `option-item ${state.language === l.code ? 'selected' : ''}`;
       btn.innerHTML = `<span>${l.name}</span> <span style="opacity: 0.6">${l.code}</span>`;
       btn.addEventListener('click', () => {
+        haptics.light();
         state.setLanguage(l.code);
         this.closeModal(this.langModal);
       });
@@ -407,12 +761,14 @@ class App {
   }
 
   openAvatarModal() {
+    if (!this.avatarModalGrid) return;
     this.avatarModalGrid.innerHTML = '';
     AVATARS.forEach(av => {
       const btn = document.createElement('button');
       btn.className = `avatar-choice ${state.avatar === av ? 'selected' : ''}`;
       btn.textContent = av;
       btn.addEventListener('click', () => {
+        haptics.light();
         state.setAvatar(av);
         this.closeModal(this.avatarModal);
       });
@@ -422,22 +778,24 @@ class App {
   }
 
   openDrawer() {
-    this.drawerOverlay.classList.add('active');
+    if (this.drawerOverlay) this.drawerOverlay.classList.add('active');
   }
 
   closeDrawer() {
-    this.drawerOverlay.classList.remove('active');
+    if (this.drawerOverlay) this.drawerOverlay.classList.remove('active');
   }
 
   openModal(modalEl) {
-    modalEl.classList.add('active');
+    if (modalEl) modalEl.classList.add('active');
   }
 
   closeModal(modalEl) {
-    modalEl.classList.remove('active');
+    if (modalEl) modalEl.classList.remove('active');
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => new App());
+} else {
   new App();
-});
+}

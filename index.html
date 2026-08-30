@@ -830,7 +830,7 @@ const TRANSLATIONS = {
     topUpTitle: '充值余额',
     topUpBody: '之后会接入支付。现在先添加测试金币。',
     cancel: '取消',
-    add100 Coins: '+100 金币',
+    add100Coins: '+100 金币',
     paywallTitle: '🚫 你已到达极限',
     paywallBody: '95%的玩家会停在这里。\n你会不一样吗？',
     coins100: '100 金币',
@@ -957,6 +957,7 @@ function generateProceduralBots() {
 }
 
 function getLeaderboardData(scope, playerState) {
+  // scope: 'world' | 'country'
   const procedural = generateProceduralBots();
   const allBots = [
     ...TOP_BOTS.map(b => ({ ...b, isPlayer: false })),
@@ -979,6 +980,7 @@ function getLeaderboardData(scope, playerState) {
 
   list.push(playerItem);
 
+  // Sort descending by score. If equal score, player comes after existing bots or by name
   list.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (a.isPlayer) return 1;
@@ -1032,156 +1034,210 @@ class SoundEffects {
 
   init() {
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        this.ctx = new AudioContext();
+      }
     }
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume();
     }
   }
 
-  playLimitWarning() {
-    if (typeof state !== 'undefined' && !state.soundEnabled) return;
+  playCoinClick() {
     try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
       this.init();
       if (!this.ctx) return;
+
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.15);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, this.ctx.currentTime); // B5
+      osc.frequency.exponentialRampToValueAtTime(1318.51, this.ctx.currentTime + 0.08); // E6
+
       gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.15);
-    } catch (e) {}
+      osc.stop(this.ctx.currentTime + 0.12);
+    } catch {
+      // Audio playback silently ignored if blocked by browser policy
+    }
   }
 
   playRatingImpact() {
-    if (typeof state !== 'undefined' && !state.soundEnabled) return;
     try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
       this.init();
       if (!this.ctx) return;
+
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
+
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(1100, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(750, this.ctx.currentTime + 0.06);
-      gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.06);
+      osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime); // E6
+      osc.frequency.exponentialRampToValueAtTime(1760.00, this.ctx.currentTime + 0.05); // A6
+
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.07);
+
       osc.connect(gain);
       gain.connect(this.ctx.destination);
+
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.06);
-    } catch (e) {}
+      osc.stop(this.ctx.currentTime + 0.07);
+    } catch {}
   }
 
-  playTopUpSuccess() {
-    if (typeof state !== 'undefined' && !state.soundEnabled) return;
+  playTopUp() {
     try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
       this.init();
       if (!this.ctx) return;
-      [523.25, 659.25, 783.99, 1046.5].forEach((freq, index) => {
+
+      const now = this.ctx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
+
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + index * 0.08);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + index * 0.08);
-        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + index * 0.08 + 0.15);
+        osc.frequency.setValueAtTime(freq, now + i * 0.06);
+
+        gain.gain.setValueAtTime(0.25, now + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.15);
+
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(this.ctx.currentTime + index * 0.08);
-        osc.stop(this.ctx.currentTime + index * 0.08 + 0.15);
+
+        osc.start(now + i * 0.06);
+        osc.stop(now + i * 0.06 + 0.15);
       });
-    } catch (e) {}
+    } catch {}
+  }
+
+  playLimitWarning() {
+    try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
+      this.init();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.2);
+
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.2);
+    } catch {}
   }
 }
 
 const sounds = new SoundEffects();
 
-const _tma = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback
-  ? window.Telegram.WebApp.HapticFeedback
-  : null;
-
 const haptics = {
-  buttonClick() {
-    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+  _tma(type, style) {
     try {
-      if (_tma && typeof _tma.impactOccurred === 'function') {
-        _tma.impactOccurred('medium');
-        return;
+      const tma = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback;
+      if (tma) {
+        if (type === 'impact' && tma.impactOccurred) {
+          tma.impactOccurred(style);
+          return true;
+        }
+        if (type === 'notification' && tma.notificationOccurred) {
+          tma.notificationOccurred(style);
+          return true;
+        }
+        if (type === 'selection' && tma.selectionChanged) {
+          tma.selectionChanged();
+          return true;
+        }
       }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(10);
+    } catch {}
+    return false;
+  },
+
+  _vibrate(pattern) {
+    try {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate(pattern);
       }
-    } catch (e) {}
+    } catch {}
+  },
+
+  // Two-stage mechanical switch tactile profile
+  mechPress() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    // Downstroke actuation: crisp, positive tactile click
+    if (!this._tma('impact', 'medium')) {
+      this._vibrate(12);
+    }
+  },
+
+  mechRelease() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    // Upstroke reset: subtle, light spring return tick
+    if (!this._tma('selection')) {
+      this._vibrate(5);
+    }
+  },
+
+  buttonClick() {
+    this.mechPress();
   },
 
   coinImpact() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    try {
-      if (_tma && typeof _tma.impactOccurred === 'function') {
-        _tma.impactOccurred('light');
-        return;
-      }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(6);
-      }
-    } catch (e) {}
+    if (!this._tma('impact', 'light')) {
+      this._vibrate(7);
+    }
   },
 
   light() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    try {
-      if (_tma && typeof _tma.selectionChanged === 'function') {
-        _tma.selectionChanged();
-        return;
-      }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(8);
-      }
-    } catch (e) {}
+    if (!this._tma('selection')) {
+      this._vibrate(8);
+    }
   },
 
   medium() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    try {
-      if (_tma && typeof _tma.impactOccurred === 'function') {
-        _tma.impactOccurred('medium');
-        return;
-      }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(15);
-      }
-    } catch (e) {}
+    if (!this._tma('impact', 'medium')) {
+      this._vibrate(16);
+    }
   },
 
   heavy() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    try {
-      if (_tma && typeof _tma.impactOccurred === 'function') {
-        _tma.impactOccurred('heavy');
-        return;
-      }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([20, 25, 20]);
-      }
-    } catch (e) {}
+    if (!this._tma('impact', 'heavy')) {
+      this._vibrate([20, 30, 25]);
+    }
+  },
+
+  success() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('notification', 'success')) {
+      this._vibrate([10, 20, 15]);
+    }
   },
 
   warning() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    try {
-      if (_tma && typeof _tma.notificationOccurred === 'function') {
-        _tma.notificationOccurred('warning');
-        return;
-      }
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate([30, 40, 30]);
-      }
-    } catch (e) {}
+    if (!this._tma('notification', 'warning')) {
+      this._vibrate([25, 40, 25, 40, 50]);
+    }
   }
 };
 
@@ -1320,7 +1376,6 @@ class AppState {
   spendCoin(newQuote) {
     if (this.coins > 0) {
       this.coins -= 1;
-      this.rating += 1;
       if (newQuote) {
         this.bannerText = newQuote;
       }
@@ -1328,6 +1383,11 @@ class AppState {
       return true;
     }
     return false;
+  }
+
+  incrementRating() {
+    this.rating += 1;
+    this.notify();
   }
 
   addCoins(amount) {
@@ -1505,7 +1565,35 @@ class App {
     }
 
     if (this.wasteBtn) {
-      this.wasteBtn.addEventListener('click', (e) => this.handleWasteClick(e));
+      let pointerHandled = false;
+      this.isWasteBtnPressed = false;
+
+      this.wasteBtn.addEventListener('pointerdown', (e) => {
+        pointerHandled = true;
+        this.isWasteBtnPressed = true;
+        if (this.wasteBtnRing) this.wasteBtnRing.classList.add('pressed');
+        this.handleWastePress(e);
+      });
+
+      const handleRelease = () => {
+        if (this.isWasteBtnPressed) {
+          this.isWasteBtnPressed = false;
+          if (this.wasteBtnRing) this.wasteBtnRing.classList.remove('pressed');
+          haptics.mechRelease();
+        }
+      };
+
+      this.wasteBtn.addEventListener('pointerup', handleRelease);
+      this.wasteBtn.addEventListener('pointercancel', handleRelease);
+      this.wasteBtn.addEventListener('pointerleave', handleRelease);
+
+      this.wasteBtn.addEventListener('click', (e) => {
+        if (pointerHandled) {
+          pointerHandled = false;
+          return;
+        }
+        this.handleWastePress(e);
+      });
     }
     if (this.ratingPill) {
       this.ratingPill.addEventListener('click', () => {
@@ -1596,7 +1684,6 @@ class App {
       this.tabWorld.addEventListener('click', () => {
         haptics.light();
         this.currentLeaderboardTab = 'world';
-        if (this.leaderboardList) this.leaderboardList.scrollTop = 0;
         this.renderLeaderboard();
       });
     }
@@ -1604,7 +1691,6 @@ class App {
       this.tabCountry.addEventListener('click', () => {
         haptics.light();
         this.currentLeaderboardTab = 'country';
-        if (this.leaderboardList) this.leaderboardList.scrollTop = 0;
         this.renderLeaderboard();
       });
     }
@@ -1615,7 +1701,7 @@ class App {
     if (this.paywall100Btn) {
       this.paywall100Btn.addEventListener('click', () => {
         haptics.heavy();
-        sounds.playTopUpSuccess();
+        sounds.playTopUp();
         state.addCoins(100);
         this.closeModal(this.paywallModal);
       });
@@ -1623,7 +1709,7 @@ class App {
     if (this.paywall500Btn) {
       this.paywall500Btn.addEventListener('click', () => {
         haptics.heavy();
-        sounds.playTopUpSuccess();
+        sounds.playTopUp();
         state.addCoins(500);
         this.closeModal(this.paywallModal);
       });
@@ -1638,7 +1724,7 @@ class App {
     if (this.topUpAddBtn) {
       this.topUpAddBtn.addEventListener('click', () => {
         haptics.heavy();
-        sounds.playTopUpSuccess();
+        sounds.playTopUp();
         state.addCoins(100);
         this.closeModal(this.topUpModal);
       });
@@ -1671,11 +1757,11 @@ class App {
     });
   }
 
-  handleWasteClick(event) {
+  handleWastePress(event) {
     if (state.coins > 0) {
       const now = performance.now();
       const delta = now - this.lastClickTime;
-      if (delta < 500) {
+      if (delta < 600) {
         this.comboStreak = Math.min(10, this.comboStreak + 1);
       } else {
         this.comboStreak = 1;
@@ -1690,11 +1776,11 @@ class App {
           this.speedGlowTimer = setTimeout(() => {
             if (this.ratingPill) this.ratingPill.classList.remove('speed-glow');
             this.comboStreak = 0;
-          }, 650);
+          }, 700);
         }
       }
 
-      haptics.buttonClick();
+      haptics.mechPress();
       const quote = getRandomQuote(state.language);
       state.spendCoin(quote);
 
@@ -1710,6 +1796,10 @@ class App {
       haptics.warning();
       this.openPaywallModal();
     }
+  }
+
+  handleWasteClick(event) {
+    this.handleWastePress(event);
   }
 
   spawnClickEffects(event) {
@@ -1748,10 +1838,10 @@ class App {
       const randX = (Math.random() - 0.5) * 36;
       const anim = particle.animate([
         { transform: 'translate3d(-50%, -50%, 0) scale(0.6)', opacity: 0 },
-        { transform: 'translate3d(-50%, calc(-50% - 18px), 0) scale(1.3)', opacity: 1, offset: 0.18 },
-        { transform: `translate3d(calc(-50% + ${randX}px), calc(-50% - 70px), 0) scale(1)`, opacity: 0, offset: 1.0 }
+        { transform: 'translate3d(-50%, calc(-50% - 20px), 0) scale(1.3)', opacity: 1, offset: 0.2 },
+        { transform: `translate3d(calc(-50% + ${randX}px), calc(-50% - 75px), 0) scale(1)`, opacity: 0, offset: 1.0 }
       ], {
-        duration: 550,
+        duration: 580,
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         fill: 'forwards'
       });
@@ -1768,8 +1858,8 @@ class App {
       const targetY = targetRect.top + targetRect.height / 2;
 
       const isCombo = this.comboStreak >= 2;
-      // High-speed energetic flight: 260ms down to 170ms on high combo!
-      const duration = Math.max(170, 260 - this.comboStreak * 10);
+      // Slower initial float (800ms) with smooth acceleration down to 260ms on spam
+      const duration = Math.max(260, 800 - (this.comboStreak - 1) * 60);
 
       const coinEl = document.createElement('div');
       coinEl.className = `flying-coin-wrapper ${isCombo ? 'combo-streak' : ''}`;
@@ -1785,35 +1875,40 @@ class App {
 
       document.body.appendChild(coinEl);
 
-      const tossApexY = Math.min(startY - (55 + Math.random() * 35), (startY + targetY) / 2);
-      const tossScatterX = startX + (Math.random() - 0.5) * 45;
+      const tossApexY = Math.min(startY - 85, (startY + targetY) / 2 - 25);
+      const tossScatterX = startX + (Math.random() - 0.5) * 36;
 
-      const midX = (tossScatterX + targetX) / 2 + (Math.random() - 0.5) * 25;
-      const midY = (tossApexY + targetY) / 2 - 15;
+      const midX = (tossScatterX + targetX) / 2 + (Math.random() - 0.5) * 16;
+      const midY = (tossApexY + targetY) / 2 - 12;
 
       const fullSpins = 2 + Math.floor(Math.random() * 2);
       const totalDegY = fullSpins * 360;
-      const wobbleZ = (Math.random() - 0.5) * 25;
+      const wobbleZ = (Math.random() - 0.5) * 18;
 
       const anim = coinEl.animate([
         {
-          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0.6) rotateY(0deg) rotateZ(0deg)`,
+          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0.65) rotateY(0deg) rotateZ(0deg)`,
           opacity: 0
         },
         {
-          transform: `translate3d(${tossScatterX - 19}px, ${tossApexY - 19}px, 0) scale(1.3) rotateY(360deg) rotateZ(${wobbleZ}deg)`,
+          transform: `translate3d(${tossScatterX * 0.35 + startX * 0.65 - 19}px, ${startY - 22}px, 0) scale(1.0) rotateY(90deg) rotateZ(${wobbleZ * 0.5}deg)`,
           opacity: 1,
-          offset: 0.16
+          offset: 0.14
         },
         {
-          transform: `translate3d(${midX - 19}px, ${midY - 19}px, 0) scale(1.0) rotateY(${totalDegY * 0.65}deg) rotateZ(${wobbleZ * 0.4}deg)`,
+          transform: `translate3d(${tossScatterX - 19}px, ${tossApexY - 19}px, 0) scale(1.25) rotateY(220deg) rotateZ(${wobbleZ}deg)`,
           opacity: 1,
-          offset: 0.55
+          offset: 0.36
         },
         {
-          transform: `translate3d(${targetX * 0.94 + startX * 0.06 - 19}px, ${targetY * 0.94 + startY * 0.06 - 19}px, 0) scale(0.65) rotateY(${totalDegY * 0.92}deg) rotateZ(0deg)`,
+          transform: `translate3d(${midX - 19}px, ${midY - 19}px, 0) scale(1.05) rotateY(${totalDegY * 0.68}deg) rotateZ(${wobbleZ * 0.4}deg)`,
+          opacity: 1,
+          offset: 0.68
+        },
+        {
+          transform: `translate3d(${targetX * 0.98 + startX * 0.02 - 19}px, ${targetY * 0.98 + startY * 0.02 - 19}px, 0) scale(0.65) rotateY(${totalDegY * 0.94}deg) rotateZ(0deg)`,
           opacity: 0.95,
-          offset: 0.85
+          offset: 0.94
         },
         {
           transform: `translate3d(${targetX - 19}px, ${targetY - 19}px, 0) scale(0.15) rotateY(${totalDegY}deg) rotateZ(0deg)`,
@@ -1822,12 +1917,13 @@ class App {
         }
       ], {
         duration: duration,
-        easing: 'cubic-bezier(0.12, 0.95, 0.25, 1)',
+        easing: 'cubic-bezier(0.35, 0, 0.25, 1)',
         fill: 'forwards'
       });
 
       anim.onfinish = () => {
         coinEl.remove();
+        state.incrementRating();
         this.triggerRatingImpact(targetX, targetY);
       };
     } catch (e) {}
@@ -1839,12 +1935,12 @@ class App {
     sounds.playRatingImpact();
     haptics.coinImpact();
 
-    // Instant snappy pulse bounce on rating pill
+    // Instant snappy pulse bounce and prolonged golden glow on rating pill
     this.ratingPill.classList.remove('rating-pill-impact');
     void this.ratingPill.offsetWidth;
     this.ratingPill.classList.add('rating-pill-impact');
 
-    // Spawn 4 fast micro sparkles around target
+    // Spawn 4 fast micro sparkles around target with silky smooth decay
     for (let i = 0; i < 4; i++) {
       const sparkle = document.createElement('div');
       sparkle.className = 'rating-sparkle';
@@ -1853,17 +1949,17 @@ class App {
       document.body.appendChild(sparkle);
 
       const angle = (i / 4) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
-      const dist = 10 + Math.random() * 12;
+      const dist = 14 + Math.random() * 16;
       const sparkX = Math.cos(angle) * dist;
       const sparkY = Math.sin(angle) * dist;
 
       const sparkAnim = sparkle.animate([
-        { transform: 'translate3d(-50%, -50%, 0) scale(0.4)', opacity: 1 },
-        { transform: `translate3d(calc(-50% + ${sparkX}px), calc(-50% + ${sparkY}px), 0) scale(1.2)`, opacity: 0.9, offset: 0.35 },
-        { transform: `translate3d(calc(-50% + ${sparkX * 1.2}px), calc(-50% + ${sparkY * 1.2}px), 0) scale(0)`, opacity: 0, offset: 1.0 }
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.5)', opacity: 1 },
+        { transform: `translate3d(calc(-50% + ${sparkX}px), calc(-50% + ${sparkY}px), 0) scale(1.2)`, opacity: 0.9, offset: 0.3 },
+        { transform: `translate3d(calc(-50% + ${sparkX * 1.25}px), calc(-50% + ${sparkY * 1.25}px), 0) scale(0)`, opacity: 0, offset: 1.0 }
       ], {
-        duration: 130,
-        easing: 'ease-out',
+        duration: 320,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         fill: 'forwards'
       });
 

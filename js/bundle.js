@@ -53,13 +53,47 @@ const COUNTRIES = [
   { code: 'GE', name: 'Georgia', flag: '🇬🇪' },
   { code: 'AM', name: 'Armenia', flag: '🇦🇲' },
   { code: 'AZ', name: 'Azerbaijan', flag: '🇦🇿' },
-  { code: 'UZ', name: 'Uzbekistan', flag: 'UZ' },
+  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿' },
   { code: 'KG', name: 'Kyrgyzstan', flag: '🇰🇬' },
   { code: 'RU', name: 'Russia', flag: '🇷🇺' }
 ];
 
 function getCountryByCode(code) {
   return COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
+}
+
+function getCountryFlagImg(code) {
+  if (!code) return '';
+  const c = code.toLowerCase();
+  return `<img src="https://flagcdn.com/24x18/${c}.png" srcset="https://flagcdn.com/48x36/${c}.png 2x" width="20" height="15" alt="${code}" class="country-flag-img" loading="lazy">`;
+}
+
+function updateScrollMask(el) {
+  if (!el) return;
+  const { scrollTop, scrollHeight, clientHeight } = el;
+  const isOverflowing = scrollHeight > clientHeight + 4;
+  
+  if (!isOverflowing) {
+    el.style.setProperty('--mask-top', '#000');
+    el.style.setProperty('--mask-top-stop', '0px');
+    el.style.setProperty('--mask-bottom', '#000');
+    el.style.setProperty('--mask-bottom-stop', '0px');
+    return;
+  }
+
+  const isAtTop = scrollTop <= 4;
+  const isAtBottom = scrollTop + clientHeight >= scrollHeight - 4;
+
+  el.style.setProperty('--mask-top', isAtTop ? '#000' : 'transparent');
+  el.style.setProperty('--mask-top-stop', isAtTop ? '0px' : '28px');
+  el.style.setProperty('--mask-bottom', isAtBottom ? '#000' : 'transparent');
+  el.style.setProperty('--mask-bottom-stop', isAtBottom ? '0px' : '28px');
+}
+
+function bindScrollMask(el) {
+  if (!el || el._hasScrollMaskBound) return;
+  el._hasScrollMaskBound = true;
+  el.addEventListener('scroll', () => updateScrollMask(el), { passive: true });
 }
 
 // --- Module: js/i18n.js ---
@@ -94,6 +128,8 @@ const TRANSLATIONS = {
     leader: 'You are the leader',
     moreTo: 'more to',
     appLanguage: 'App language',
+    sound: 'Sound FX',
+    haptics: 'Haptic Feedback',
     resetProfile: 'Reset profile',
     changeAvatar: 'Change avatar',
     initialMessage: 'Ready to prove you are not like everyone else?',
@@ -140,6 +176,8 @@ const TRANSLATIONS = {
     leader: 'Ты лидер',
     moreTo: 'ещё',
     appLanguage: 'Язык приложения',
+    sound: 'Звуковые эффекты',
+    haptics: 'Вибрация (Haptic)',
     resetProfile: 'Сбросить профиль',
     changeAvatar: 'Сменить аватар',
     initialMessage: 'Готов доказать, что ты не как все?',
@@ -186,6 +224,8 @@ const TRANSLATIONS = {
     leader: 'Сен көшбасшысың',
     moreTo: 'қалды',
     appLanguage: 'Қолданба тілі',
+    sound: 'Дыбыс эффектілері',
+    haptics: 'Діріл (Haptic)',
     resetProfile: 'Профильді тазарту',
     changeAvatar: 'Аватарды өзгерту',
     initialMessage: 'Басқалардан ерекше екеніңді дәлелдеуге дайынсың ба?',
@@ -232,6 +272,8 @@ const TRANSLATIONS = {
     leader: 'Eres el líder',
     moreTo: 'más para',
     appLanguage: 'Idioma de la app',
+    sound: 'Efectos de sonido',
+    haptics: 'Vibración (Haptic)',
     resetProfile: 'Restablecer perfil',
     changeAvatar: 'Cambiar avatar',
     initialMessage: '¿Listo para demostrar que no eres como los demás?',
@@ -278,6 +320,8 @@ const TRANSLATIONS = {
     leader: 'Você é o líder',
     moreTo: 'a mais para',
     appLanguage: 'Idioma do app',
+    sound: 'Efeitos sonoros',
+    haptics: 'Vibração (Haptic)',
     resetProfile: 'Redefinir perfil',
     changeAvatar: 'Alterar avatar',
     initialMessage: 'Pronto para provar que você não é como todo mundo?',
@@ -324,6 +368,8 @@ const TRANSLATIONS = {
     leader: 'Du bist der Spitzenreiter',
     moreTo: 'mehr bis',
     appLanguage: 'App-Sprache',
+    sound: 'Soundeffekte',
+    haptics: 'Haptisches Feedback',
     resetProfile: 'Profil zurücksetzen',
     changeAvatar: 'Avatar ändern',
     initialMessage: 'Bereit zu beweisen, dass du nicht wie alle anderen bist?',
@@ -370,6 +416,8 @@ const TRANSLATIONS = {
     leader: 'Tu es en tête',
     moreTo: 'de plus pour',
     appLanguage: 'Langue de l’app',
+    sound: 'Effets sonores',
+    haptics: 'Retour haptique',
     resetProfile: 'Réinitialiser le profil',
     changeAvatar: 'Changer l’avatar',
     initialMessage: 'Prêt à prouver que tu n’es pas comme les autres ?',
@@ -416,6 +464,8 @@ const TRANSLATIONS = {
     leader: 'Lidersin',
     moreTo: 'daha',
     appLanguage: 'Uygulama dili',
+    sound: 'Ses efektleri',
+    haptics: 'Titreşim (Haptic)',
     resetProfile: 'Profili sıfırla',
     changeAvatar: 'Avatarı değiştir',
     initialMessage: 'Herkes gibi olmadığını kanıtlamaya hazır mısın?',
@@ -462,6 +512,8 @@ const TRANSLATIONS = {
     leader: '你是第一名',
     moreTo: '还差',
     appLanguage: '应用语言',
+    sound: '声音特效',
+    haptics: '触觉震动',
     resetProfile: '重置资料',
     changeAvatar: '更换头像',
     initialMessage: '准备好证明你和别人不一样了吗？',
@@ -508,6 +560,8 @@ const TRANSLATIONS = {
     leader: 'Kamu pemimpin',
     moreTo: 'lagi ke',
     appLanguage: 'Bahasa aplikasi',
+    sound: 'Efek suara',
+    haptics: 'Getaran (Haptic)',
     resetProfile: 'Reset profil',
     changeAvatar: 'Ganti avatar',
     initialMessage: 'Siap membuktikan bahwa kamu tidak sama seperti yang lain?',
@@ -552,6 +606,7 @@ function getRandomQuote(lang) {
 }
 
 // --- Module: js/leaderboard.js ---
+
 const TOP_BOTS = [
   { name: 'GoldenTap', country: 'US', avatar: '👑', score: 145286 },
   { name: 'ClickLord', country: 'KZ', avatar: '🔥', score: 139369 },
@@ -593,6 +648,7 @@ function generateProceduralBots() {
 }
 
 function getLeaderboardData(scope, playerState) {
+  // scope: 'world' | 'country'
   const procedural = generateProceduralBots();
   const allBots = [
     ...TOP_BOTS.map(b => ({ ...b, isPlayer: false })),
@@ -615,6 +671,7 @@ function getLeaderboardData(scope, playerState) {
 
   list.push(playerItem);
 
+  // Sort descending by score. If equal score, player comes after existing bots or by name
   list.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (a.isPlayer) return 1;
@@ -680,6 +737,7 @@ class SoundEffects {
 
   playCoinClick() {
     try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
       this.init();
       if (!this.ctx) return;
 
@@ -687,8 +745,8 @@ class SoundEffects {
       const gain = this.ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(987.77, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1318.51, this.ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(987.77, this.ctx.currentTime); // B5
+      osc.frequency.exponentialRampToValueAtTime(1318.51, this.ctx.currentTime + 0.08); // E6
 
       gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
@@ -698,11 +756,38 @@ class SoundEffects {
 
       osc.start();
       osc.stop(this.ctx.currentTime + 0.12);
+    } catch {
+      // Audio playback silently ignored if blocked by browser policy
+    }
+  }
+
+  playRatingImpact() {
+    try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
+      this.init();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1318.51, this.ctx.currentTime); // E6
+      osc.frequency.exponentialRampToValueAtTime(1760.00, this.ctx.currentTime + 0.05); // A6
+
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.07);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.07);
     } catch {}
   }
 
   playTopUp() {
     try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
       this.init();
       if (!this.ctx) return;
 
@@ -728,6 +813,7 @@ class SoundEffects {
 
   playLimitWarning() {
     try {
+      if (typeof state !== 'undefined' && !state.soundEnabled) return;
       this.init();
       if (!this.ctx) return;
 
@@ -753,37 +839,101 @@ class SoundEffects {
 const sounds = new SoundEffects();
 
 const haptics = {
-  light: () => {
+  _tma(type, style) {
+    try {
+      const tma = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback;
+      if (tma) {
+        if (type === 'impact' && tma.impactOccurred) {
+          tma.impactOccurred(style);
+          return true;
+        }
+        if (type === 'notification' && tma.notificationOccurred) {
+          tma.notificationOccurred(style);
+          return true;
+        }
+        if (type === 'selection' && tma.selectionChanged) {
+          tma.selectionChanged();
+          return true;
+        }
+      }
+    } catch {}
+    return false;
+  },
+
+  _vibrate(pattern) {
     try {
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate(12);
+        navigator.vibrate(pattern);
       }
     } catch {}
   },
-  medium: () => {
-    try {
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate(28);
-      }
-    } catch {}
+
+  // Two-stage mechanical switch tactile profile
+  mechPress() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    // Downstroke actuation: crisp, positive tactile click
+    if (!this._tma('impact', 'medium')) {
+      this._vibrate(12);
+    }
   },
-  heavy: () => {
-    try {
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([35, 30, 45]);
-      }
-    } catch {}
+
+  mechRelease() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    // Upstroke reset: subtle, light spring return tick
+    if (!this._tma('selection')) {
+      this._vibrate(5);
+    }
   },
-  warning: () => {
-    try {
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([40, 40, 40, 40, 70]);
-      }
-    } catch {}
+
+  buttonClick() {
+    this.mechPress();
+  },
+
+  coinImpact() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('impact', 'light')) {
+      this._vibrate(7);
+    }
+  },
+
+  light() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('selection')) {
+      this._vibrate(8);
+    }
+  },
+
+  medium() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('impact', 'medium')) {
+      this._vibrate(16);
+    }
+  },
+
+  heavy() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('impact', 'heavy')) {
+      this._vibrate([20, 30, 25]);
+    }
+  },
+
+  success() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('notification', 'success')) {
+      this._vibrate([10, 20, 15]);
+    }
+  },
+
+  warning() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    if (!this._tma('notification', 'warning')) {
+      this._vibrate([25, 40, 25, 40, 50]);
+    }
   }
 };
 
 // --- Module: js/state.js ---
+
 const STORAGE_KEYS = {
   NICK: 'flutter.nick',
   COUNTRY: 'flutter.country',
@@ -791,6 +941,8 @@ const STORAGE_KEYS = {
   AVATAR: 'flutter.avatar',
   COINS: 'flutter.coins',
   RATING: 'flutter.rating',
+  SOUND: 'flutter.sound_enabled',
+  HAPTICS: 'flutter.haptics_enabled',
   RANK_WORLD: 'flutter.last_seen_rank_world',
   RANK_COUNTRY: 'flutter.last_seen_rank_country_'
 };
@@ -836,6 +988,20 @@ class AppState {
     const rawRating = localStorage.getItem(STORAGE_KEYS.RATING);
     this.rating = rawRating !== null ? parseInt(rawRating, 10) : 0;
 
+    try {
+      const rawSound = localStorage.getItem(STORAGE_KEYS.SOUND);
+      this.soundEnabled = rawSound !== null ? JSON.parse(rawSound) : true;
+    } catch {
+      this.soundEnabled = true;
+    }
+
+    try {
+      const rawHaptics = localStorage.getItem(STORAGE_KEYS.HAPTICS);
+      this.hapticsEnabled = rawHaptics !== null ? JSON.parse(rawHaptics) : true;
+    } catch {
+      this.hapticsEnabled = true;
+    }
+
     this.isInitialized = Boolean(this.nick && this.nick.trim().length >= 3);
     this.bannerText = t(this.language, 'initialMessage');
   }
@@ -847,6 +1013,8 @@ class AppState {
     localStorage.setItem(STORAGE_KEYS.AVATAR, JSON.stringify(this.avatar));
     localStorage.setItem(STORAGE_KEYS.COINS, this.coins.toString());
     localStorage.setItem(STORAGE_KEYS.RATING, this.rating.toString());
+    localStorage.setItem(STORAGE_KEYS.SOUND, JSON.stringify(this.soundEnabled));
+    localStorage.setItem(STORAGE_KEYS.HAPTICS, JSON.stringify(this.hapticsEnabled));
   }
 
   subscribe(listener) {
@@ -859,6 +1027,16 @@ class AppState {
     for (const listener of this.listeners) {
       listener(this);
     }
+  }
+
+  toggleSound() {
+    this.soundEnabled = !this.soundEnabled;
+    this.notify();
+  }
+
+  toggleHaptics() {
+    this.hapticsEnabled = !this.hapticsEnabled;
+    this.notify();
   }
 
   setProfile(nick, country, language, avatar) {
@@ -889,7 +1067,6 @@ class AppState {
   spendCoin(newQuote) {
     if (this.coins > 0) {
       this.coins -= 1;
-      this.rating += 1;
       if (newQuote) {
         this.bannerText = newQuote;
       }
@@ -897,6 +1074,11 @@ class AppState {
       return true;
     }
     return false;
+  }
+
+  incrementRating() {
+    this.rating += 1;
+    this.notify();
   }
 
   addCoins(amount) {
@@ -913,6 +1095,8 @@ class AppState {
     this.avatar = '👑';
     this.coins = 5;
     this.rating = 0;
+    this.soundEnabled = true;
+    this.hapticsEnabled = true;
     this.isInitialized = false;
     this.bannerText = t(this.language, 'initialMessage');
     this.notify();
@@ -928,6 +1112,9 @@ class App {
   constructor() {
     this.currentLeaderboardTab = 'world';
     this.selectedSetupAvatar = state.avatar || '👑';
+    this.lastClickTime = 0;
+    this.comboStreak = 0;
+    this.speedGlowTimer = null;
     this.initElements();
     this.bindEvents();
     this.render();
@@ -1013,6 +1200,12 @@ class App {
     this.drawerAvatar = document.getElementById('drawer-avatar');
     this.drawerNick = document.getElementById('drawer-nick');
     this.drawerMeta = document.getElementById('drawer-meta');
+    this.drawerSoundBtn = document.getElementById('drawer-sound-btn');
+    this.drawerSoundText = document.getElementById('drawer-sound-text');
+    this.drawerSoundStatus = document.getElementById('drawer-sound-status');
+    this.drawerHapticsBtn = document.getElementById('drawer-haptics-btn');
+    this.drawerHapticsText = document.getElementById('drawer-haptics-text');
+    this.drawerHapticsStatus = document.getElementById('drawer-haptics-status');
     this.drawerRatingBtn = document.getElementById('drawer-rating-btn');
     this.drawerTopUpBtn = document.getElementById('drawer-topup-btn');
     this.drawerLangBtn = document.getElementById('drawer-lang-btn');
@@ -1063,7 +1256,35 @@ class App {
     }
 
     if (this.wasteBtn) {
-      this.wasteBtn.addEventListener('click', (e) => this.handleWasteClick(e));
+      let pointerHandled = false;
+      this.isWasteBtnPressed = false;
+
+      this.wasteBtn.addEventListener('pointerdown', (e) => {
+        pointerHandled = true;
+        this.isWasteBtnPressed = true;
+        if (this.wasteBtnRing) this.wasteBtnRing.classList.add('pressed');
+        this.handleWastePress(e);
+      });
+
+      const handleRelease = () => {
+        if (this.isWasteBtnPressed) {
+          this.isWasteBtnPressed = false;
+          if (this.wasteBtnRing) this.wasteBtnRing.classList.remove('pressed');
+          haptics.mechRelease();
+        }
+      };
+
+      this.wasteBtn.addEventListener('pointerup', handleRelease);
+      this.wasteBtn.addEventListener('pointercancel', handleRelease);
+      this.wasteBtn.addEventListener('pointerleave', handleRelease);
+
+      this.wasteBtn.addEventListener('click', (e) => {
+        if (pointerHandled) {
+          pointerHandled = false;
+          return;
+        }
+        this.handleWastePress(e);
+      });
     }
     if (this.ratingPill) {
       this.ratingPill.addEventListener('click', () => {
@@ -1087,6 +1308,18 @@ class App {
     if (this.drawerOverlay) {
       this.drawerOverlay.addEventListener('click', (e) => {
         if (e.target === this.drawerOverlay) this.closeDrawer();
+      });
+    }
+    if (this.drawerSoundBtn) {
+      this.drawerSoundBtn.addEventListener('click', () => {
+        haptics.light();
+        state.toggleSound();
+      });
+    }
+    if (this.drawerHapticsBtn) {
+      this.drawerHapticsBtn.addEventListener('click', () => {
+        state.toggleHaptics();
+        haptics.light();
       });
     }
     if (this.drawerRatingBtn) {
@@ -1215,10 +1448,30 @@ class App {
     });
   }
 
-  handleWasteClick(event) {
+  handleWastePress(event) {
     if (state.coins > 0) {
-      sounds.playCoinClick();
-      haptics.medium();
+      const now = performance.now();
+      const delta = now - this.lastClickTime;
+      if (delta < 600) {
+        this.comboStreak = Math.min(10, this.comboStreak + 1);
+      } else {
+        this.comboStreak = 1;
+      }
+      this.lastClickTime = now;
+
+      // Speed glow effect on rating pill during fast tapping
+      if (this.ratingPill) {
+        if (this.comboStreak >= 2) {
+          this.ratingPill.classList.add('speed-glow');
+          clearTimeout(this.speedGlowTimer);
+          this.speedGlowTimer = setTimeout(() => {
+            if (this.ratingPill) this.ratingPill.classList.remove('speed-glow');
+            this.comboStreak = 0;
+          }, 700);
+        }
+      }
+
+      haptics.mechPress();
       const quote = getRandomQuote(state.language);
       state.spendCoin(quote);
 
@@ -1228,7 +1481,7 @@ class App {
         this.wasteBtnRing.classList.add('clicked');
       }
 
-      this.spawnParticle(event);
+      this.spawnClickEffects(event);
     } else {
       sounds.playLimitWarning();
       haptics.warning();
@@ -1236,24 +1489,173 @@ class App {
     }
   }
 
-  spawnParticle(event) {
+  handleWasteClick(event) {
+    this.handleWastePress(event);
+  }
+
+  spawnClickEffects(event) {
+    try {
+      const rect = this.wasteBtn ? this.wasteBtn.getBoundingClientRect() : { left: window.innerWidth / 2 - 40, top: window.innerHeight / 2 - 40, width: 80, height: 80 };
+      const touchX = event && event.touches && event.touches[0] ? event.touches[0].clientX : null;
+      const touchY = event && event.touches && event.touches[0] ? event.touches[0].clientY : null;
+      const changedX = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientX : null;
+      const changedY = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientY : null;
+
+      const rawX = event && event.clientX ? event.clientX : (touchX || changedX);
+      const rawY = event && event.clientY ? event.clientY : (touchY || changedY);
+
+      const startX = rawX || (rect.left + rect.width / 2);
+      const startY = rawY || (rect.top + rect.height / 2);
+
+      // 1. Spawn +1 floating text
+      this.spawnFloatingText(startX, startY);
+
+      // 2. Spawn tossed 3D coin to rating pill
+      this.spawnFlyingCoin(startX, startY);
+    } catch (e) {
+      console.error('Error spawning click effects:', e);
+    }
+  }
+
+  spawnFloatingText(startX, startY) {
     try {
       const particle = document.createElement('div');
       particle.className = 'floating-particle';
-      particle.textContent = '+1 WASTE';
-      const randX = (Math.random() - 0.5) * 60;
-      particle.style.setProperty('--rand-x', randX);
-
-      const rect = this.wasteBtn.getBoundingClientRect();
-      const x = event ? (event.clientX || rect.left + rect.width / 2) : rect.left + rect.width / 2;
-      const y = event ? (event.clientY || rect.top + rect.height / 2) : rect.top + rect.height / 2;
-
-      particle.style.left = `${x - 40}px`;
-      particle.style.top = `${y - 30}px`;
+      particle.textContent = '+1';
+      particle.style.left = `${startX}px`;
+      particle.style.top = `${startY}px`;
       document.body.appendChild(particle);
 
-      setTimeout(() => particle.remove(), 800);
+      const randX = (Math.random() - 0.5) * 36;
+      const anim = particle.animate([
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.6)', opacity: 0 },
+        { transform: 'translate3d(-50%, calc(-50% - 20px), 0) scale(1.3)', opacity: 1, offset: 0.2 },
+        { transform: `translate3d(calc(-50% + ${randX}px), calc(-50% - 75px), 0) scale(1)`, opacity: 0, offset: 1.0 }
+      ], {
+        duration: 580,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => particle.remove();
     } catch (e) {}
+  }
+
+  spawnFlyingCoin(startX, startY) {
+    try {
+      if (!this.ratingPill) return;
+      const targetRect = this.ratingPill.getBoundingClientRect();
+      const targetX = targetRect.left + targetRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2;
+
+      const isCombo = this.comboStreak >= 2;
+      // Slower initial float (800ms) with smooth acceleration down to 260ms on spam
+      const duration = Math.max(260, 800 - (this.comboStreak - 1) * 60);
+
+      const coinEl = document.createElement('div');
+      coinEl.className = `flying-coin-wrapper ${isCombo ? 'combo-streak' : ''}`;
+      coinEl.innerHTML = `
+        <div class="flying-coin-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#141418" stroke="#f59e0b" stroke-width="9"/>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="4,4"/>
+            <text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#f59e0b" text-anchor="middle">W</text>
+          </svg>
+        </div>
+      `;
+
+      document.body.appendChild(coinEl);
+
+      const tossApexY = Math.min(startY - 85, (startY + targetY) / 2 - 25);
+      const tossScatterX = startX + (Math.random() - 0.5) * 36;
+
+      const midX = (tossScatterX + targetX) / 2 + (Math.random() - 0.5) * 16;
+      const midY = (tossApexY + targetY) / 2 - 12;
+
+      const fullSpins = 2 + Math.floor(Math.random() * 2);
+      const totalDegY = fullSpins * 360;
+      const wobbleZ = (Math.random() - 0.5) * 18;
+
+      const anim = coinEl.animate([
+        {
+          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0.65) rotateY(0deg) rotateZ(0deg)`,
+          opacity: 0
+        },
+        {
+          transform: `translate3d(${tossScatterX * 0.35 + startX * 0.65 - 19}px, ${startY - 22}px, 0) scale(1.0) rotateY(90deg) rotateZ(${wobbleZ * 0.5}deg)`,
+          opacity: 1,
+          offset: 0.14
+        },
+        {
+          transform: `translate3d(${tossScatterX - 19}px, ${tossApexY - 19}px, 0) scale(1.25) rotateY(220deg) rotateZ(${wobbleZ}deg)`,
+          opacity: 1,
+          offset: 0.36
+        },
+        {
+          transform: `translate3d(${midX - 19}px, ${midY - 19}px, 0) scale(1.05) rotateY(${totalDegY * 0.68}deg) rotateZ(${wobbleZ * 0.4}deg)`,
+          opacity: 1,
+          offset: 0.68
+        },
+        {
+          transform: `translate3d(${targetX * 0.98 + startX * 0.02 - 19}px, ${targetY * 0.98 + startY * 0.02 - 19}px, 0) scale(0.65) rotateY(${totalDegY * 0.94}deg) rotateZ(0deg)`,
+          opacity: 0.95,
+          offset: 0.94
+        },
+        {
+          transform: `translate3d(${targetX - 19}px, ${targetY - 19}px, 0) scale(0.15) rotateY(${totalDegY}deg) rotateZ(0deg)`,
+          opacity: 0,
+          offset: 1.0
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.35, 0, 0.25, 1)',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => {
+        coinEl.remove();
+        state.incrementRating();
+        this.triggerRatingImpact(targetX, targetY);
+      };
+    } catch (e) {}
+  }
+
+  triggerRatingImpact(targetX, targetY) {
+    if (!this.ratingPill) return;
+
+    sounds.playRatingImpact();
+    haptics.coinImpact();
+
+    // Instant snappy pulse bounce and prolonged golden glow on rating pill
+    this.ratingPill.classList.remove('rating-pill-impact');
+    void this.ratingPill.offsetWidth;
+    this.ratingPill.classList.add('rating-pill-impact');
+
+    // Spawn 4 fast micro sparkles around target with silky smooth decay
+    for (let i = 0; i < 4; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'rating-sparkle';
+      sparkle.style.left = `${targetX}px`;
+      sparkle.style.top = `${targetY}px`;
+      document.body.appendChild(sparkle);
+
+      const angle = (i / 4) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const dist = 14 + Math.random() * 16;
+      const sparkX = Math.cos(angle) * dist;
+      const sparkY = Math.sin(angle) * dist;
+
+      const sparkAnim = sparkle.animate([
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.5)', opacity: 1 },
+        { transform: `translate3d(calc(-50% + ${sparkX}px), calc(-50% + ${sparkY}px), 0) scale(1.2)`, opacity: 0.9, offset: 0.3 },
+        { transform: `translate3d(calc(-50% + ${sparkX * 1.25}px), calc(-50% + ${sparkY * 1.25}px), 0) scale(0)`, opacity: 0, offset: 1.0 }
+      ], {
+        duration: 320,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'forwards'
+      });
+
+      sparkAnim.onfinish = () => sparkle.remove();
+    }
   }
 
   render() {
@@ -1271,7 +1673,7 @@ class App {
     if (this.appTitle) this.appTitle.textContent = 'MONEY WASTER';
     if (this.setupSubtitle) this.setupSubtitle.textContent = t(lang, 'profileTitle');
     if (this.nickInput) this.nickInput.placeholder = t(lang, 'nickHint');
-    if (this.setupCountryText) this.setupCountryText.textContent = `${t(lang, 'country')}: ${country.flag} ${country.name}`;
+    if (this.setupCountryText) this.setupCountryText.innerHTML = `${t(lang, 'country')}: ${getCountryFlagImg(country.code)} ${country.name}`;
     if (this.setupLangText) {
       const langObj = LANGUAGES.find(l => l.code === lang);
       this.setupLangText.textContent = `${t(lang, 'language')}: ${langObj ? langObj.name : lang}`;
@@ -1293,6 +1695,10 @@ class App {
     if (this.drawerAvatar) this.drawerAvatar.textContent = state.avatar;
     if (this.drawerNick) this.drawerNick.textContent = state.nick || 'Player';
     if (this.drawerMeta) this.drawerMeta.textContent = `${state.country} · ${state.language}`;
+    if (this.drawerSoundText) this.drawerSoundText.textContent = t(lang, 'sound');
+    if (this.drawerSoundStatus) this.drawerSoundStatus.classList.toggle('active', Boolean(state.soundEnabled));
+    if (this.drawerHapticsText) this.drawerHapticsText.textContent = t(lang, 'haptics');
+    if (this.drawerHapticsStatus) this.drawerHapticsStatus.classList.toggle('active', Boolean(state.hapticsEnabled));
     if (this.drawerRatingBtn) this.drawerRatingBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'rating');
     if (this.drawerTopUpBtn) this.drawerTopUpBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'topUpTitle');
     if (this.drawerLangBtn) this.drawerLangBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'appLanguage');
@@ -1357,6 +1763,7 @@ class App {
   }
 
   openLeaderboardModal() {
+    if (this.leaderboardList) this.leaderboardList.scrollTop = 0;
     this.renderLeaderboard();
     this.openModal(this.leaderboardModal);
   }
@@ -1386,7 +1793,7 @@ class App {
           <div class="leaderboard-left">
             <span class="rank-badge">#${item.rank}</span>
             <span class="avatar-icon">${item.avatar}</span>
-            <span class="leaderboard-name">${item.name} <span>${item.flag}</span></span>
+            <span class="leaderboard-name">${item.name} <span>${getCountryFlagImg(item.countryCode)}</span></span>
           </div>
           <span class="leaderboard-score">${item.score} WASTE</span>
         </div>
@@ -1396,6 +1803,8 @@ class App {
       `;
       this.leaderboardList.appendChild(row);
     });
+    bindScrollMask(this.leaderboardList);
+    requestAnimationFrame(() => updateScrollMask(this.leaderboardList));
   }
 
   openTopUpModal() {
@@ -1411,6 +1820,7 @@ class App {
       this.countrySearch.value = '';
       this.countrySearch.placeholder = t(state.language, 'search');
     }
+    if (this.countryList) this.countryList.scrollTop = 0;
     this.renderCountryList('');
     this.openModal(this.countryModal);
   }
@@ -1424,7 +1834,7 @@ class App {
     filtered.forEach(c => {
       const btn = document.createElement('button');
       btn.className = `option-item ${state.country === c.code ? 'selected' : ''}`;
-      btn.innerHTML = `<span>${c.flag} ${c.name}</span> <span style="opacity: 0.6">${c.code}</span>`;
+      btn.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;">${getCountryFlagImg(c.code)} ${c.name}</span> <span style="opacity: 0.6">${c.code}</span>`;
       btn.addEventListener('click', () => {
         haptics.light();
         state.setCountry(c.code);
@@ -1432,6 +1842,8 @@ class App {
       });
       this.countryList.appendChild(btn);
     });
+    bindScrollMask(this.countryList);
+    requestAnimationFrame(() => updateScrollMask(this.countryList));
   }
 
   openLangModal() {
@@ -1439,6 +1851,7 @@ class App {
       this.langSearch.value = '';
       this.langSearch.placeholder = t(state.language, 'search');
     }
+    if (this.langList) this.langList.scrollTop = 0;
     this.renderLangList('');
     this.openModal(this.langModal);
   }
@@ -1460,6 +1873,8 @@ class App {
       });
       this.langList.appendChild(btn);
     });
+    bindScrollMask(this.langList);
+    requestAnimationFrame(() => updateScrollMask(this.langList));
   }
 
   openAvatarModal() {
@@ -1488,7 +1903,16 @@ class App {
   }
 
   openModal(modalEl) {
-    if (modalEl) modalEl.classList.add('active');
+    if (modalEl) {
+      modalEl.classList.add('active');
+      requestAnimationFrame(() => {
+        const scrollables = modalEl.querySelectorAll('.options-scroll-list, .leaderboard-list');
+        scrollables.forEach(el => {
+          bindScrollMask(el);
+          updateScrollMask(el);
+        });
+      });
+    }
   }
 
   closeModal(modalEl) {
