@@ -1,4 +1,4 @@
-const CACHE_NAME = 'money-waster-v2';
+const CACHE_NAME = 'money-waster-v4';
 const ASSETS = [
   './',
   './index.html',
