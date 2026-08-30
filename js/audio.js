@@ -153,29 +153,22 @@ export const haptics = {
   // Two-stage mechanical switch tactile profile
   mechPress() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    // Downstroke actuation: crisp, positive tactile click
-    if (!this._tma('impact', 'medium')) {
-      this._vibrate(12);
+    // Downstroke actuation: light semi-click going down
+    if (!this._tma('impact', 'light')) {
+      this._vibrate(5);
     }
   },
 
   mechRelease() {
     if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    // Upstroke reset: subtle, light spring return tick
-    if (!this._tma('selection')) {
-      this._vibrate(5);
+    // Upstroke reset: medium solid click on release
+    if (!this._tma('impact', 'medium')) {
+      this._vibrate(10);
     }
   },
 
   buttonClick() {
     this.mechPress();
-  },
-
-  coinImpact() {
-    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
-    if (!this._tma('impact', 'light')) {
-      this._vibrate(7);
-    }
   },
 
   light() {

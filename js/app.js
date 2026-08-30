@@ -470,84 +470,47 @@ class App {
 
       const anim = coinEl.animate([
         {
-          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0.65) rotateY(0deg) rotateZ(0deg)`,
-          opacity: 0
-        },
-        {
-          transform: `translate3d(${tossScatterX * 0.35 + startX * 0.65 - 19}px, ${startY - 22}px, 0) scale(1.0) rotateY(90deg) rotateZ(${wobbleZ * 0.5}deg)`,
-          opacity: 1,
-          offset: 0.14
-        },
-        {
-          transform: `translate3d(${tossScatterX - 19}px, ${tossApexY - 19}px, 0) scale(1.25) rotateY(220deg) rotateZ(${wobbleZ}deg)`,
-          opacity: 1,
-          offset: 0.36
-        },
-        {
-          transform: `translate3d(${midX - 19}px, ${midY - 19}px, 0) scale(1.05) rotateY(${totalDegY * 0.68}deg) rotateZ(${wobbleZ * 0.4}deg)`,
-          opacity: 1,
-          offset: 0.68
-        },
-        {
-          transform: `translate3d(${targetX * 0.98 + startX * 0.02 - 19}px, ${targetY * 0.98 + startY * 0.02 - 19}px, 0) scale(0.65) rotateY(${totalDegY * 0.94}deg) rotateZ(0deg)`,
-          opacity: 0.95,
-          offset: 0.94
-        },
-        {
-          transform: `translate3d(${targetX - 19}px, ${targetY - 19}px, 0) scale(0.15) rotateY(${totalDegY}deg) rotateZ(0deg)`,
+          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0) rotateY(0deg) rotateZ(0deg)`,
           opacity: 0,
+          offset: 0
+        },
+        {
+          transform: `translate3d(${startX - 19}px, ${startY - 40}px, 0) scale(1) rotateY(90deg) rotateZ(${wobbleZ * 0.2}deg)`,
+          opacity: 1,
+          offset: 0.2
+        },
+        {
+          transform: `translate3d(${midX - 19}px, ${tossApexY - 19}px, 0) scale(1.2) rotateY(180deg) rotateZ(${wobbleZ}deg)`,
+          offset: 0.6
+        },
+        {
+          transform: `translate3d(${targetX - 19}px, ${targetY - 19}px, 0) scale(0.3) rotateY(${totalDegY}deg) rotateZ(0deg)`,
+          opacity: 0.8,
           offset: 1.0
         }
       ], {
         duration: duration,
-        easing: 'cubic-bezier(0.35, 0, 0.25, 1)',
+        easing: 'cubic-bezier(0.4, 0, 1, 1)', // ease-in for a slow start and smash impact
         fill: 'forwards'
       });
 
       anim.onfinish = () => {
         coinEl.remove();
         state.incrementRating();
-        this.triggerRatingImpact(targetX, targetY);
+        this.triggerRatingImpact();
       };
     } catch (e) {}
   }
 
-  triggerRatingImpact(targetX, targetY) {
+  triggerRatingImpact() {
     if (!this.ratingPill) return;
 
     sounds.playRatingImpact();
-    haptics.coinImpact();
 
-    // Instant snappy pulse bounce and prolonged golden glow on rating pill
+    // Instant snappy pulse bounce and golden glow on rating pill
     this.ratingPill.classList.remove('rating-pill-impact');
     void this.ratingPill.offsetWidth;
     this.ratingPill.classList.add('rating-pill-impact');
-
-    // Spawn 4 fast micro sparkles around target with silky smooth decay
-    for (let i = 0; i < 4; i++) {
-      const sparkle = document.createElement('div');
-      sparkle.className = 'rating-sparkle';
-      sparkle.style.left = `${targetX}px`;
-      sparkle.style.top = `${targetY}px`;
-      document.body.appendChild(sparkle);
-
-      const angle = (i / 4) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
-      const dist = 14 + Math.random() * 16;
-      const sparkX = Math.cos(angle) * dist;
-      const sparkY = Math.sin(angle) * dist;
-
-      const sparkAnim = sparkle.animate([
-        { transform: 'translate3d(-50%, -50%, 0) scale(0.5)', opacity: 1 },
-        { transform: `translate3d(calc(-50% + ${sparkX}px), calc(-50% + ${sparkY}px), 0) scale(1.2)`, opacity: 0.9, offset: 0.3 },
-        { transform: `translate3d(calc(-50% + ${sparkX * 1.25}px), calc(-50% + ${sparkY * 1.25}px), 0) scale(0)`, opacity: 0, offset: 1.0 }
-      ], {
-        duration: 320,
-        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-        fill: 'forwards'
-      });
-
-      sparkAnim.onfinish = () => sparkle.remove();
-    }
   }
 
   render() {
