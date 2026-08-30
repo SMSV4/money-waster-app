@@ -1,16 +1,15 @@
 {
   "name": "Money Waster",
-  "short_name": "MoneyWaster",
-  "description": "The ultimate luxury clicker game to waste coins and conquer the leaderboard",
+  "short_name": "Waste",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0a0a0c",
-  "theme_color": "#0a0a0c",
+  "background_color": "#0d0d11",
+  "theme_color": "#0d0d11",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23141418' stroke='%23f59e0b' stroke-width='6'/><text x='50' y='64' font-size='42' font-family='sans-serif' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>W</text></svg>",
-      "sizes": "192x192 512x512",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='128' fill='%23141418'/%3E%3Ccircle cx='256' cy='256' r='200' fill='none' stroke='%23f59e0b' stroke-width='32'/%3E%3Ccircle cx='256' cy='256' r='150' fill='none' stroke='%23f59e0b' stroke-width='14' stroke-dasharray='16,16'/%3E%3Ctext x='256' y='330' font-size='220' font-family='sans-serif' font-weight='900' fill='%23f59e0b' text-anchor='middle'%3EW%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
