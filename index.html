@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Money Waster</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪙</text></svg>">
+</head>
+<body>
+  <div id="app-container">
+    
+    <!-- 1. SETUP SCREEN (PROFILE CREATION) -->
+    <section id="setup-screen" class="screen active">
+      <div class="setup-card">
+        <h1 id="app-title" class="app-title">MONEY WASTER</h1>
+        <p id="setup-subtitle" class="setup-subtitle">Создай профиль игрока</p>
+
+        <!-- Nickname Input -->
+        <div class="form-group">
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="nick-input" class="input-control" maxlength="16" placeholder="Например: ClickLord" autocomplete="off" spellcheck="false">
+          </div>
+          <div id="char-count" class="input-hint">16 characters remaining</div>
+        </div>
+
+        <!-- Country Select -->
+        <div class="form-group">
+          <button type="button" id="setup-country-btn" class="select-btn">
+            <div class="select-btn-content">
+              <span style="font-size: 18px;">🏳️</span>
+              <span id="setup-country-text">Страна игрока: 🇰🇿 Kazakhstan</span>
+            </div>
+            <span style="opacity: 0.6;">▼</span>
+          </button>
+        </div>
+
+        <!-- Language Select -->
+        <div class="form-group">
+          <button type="button" id="setup-lang-btn" class="select-btn">
+            <div class="select-btn-content">
+              <span style="font-size: 18px;">🌐</span>
+              <span id="setup-lang-text">Язык приложения: Русский</span>
+            </div>
+            <span style="opacity: 0.6;">▼</span>
+          </button>
+        </div>
+
+        <!-- Avatar Choice -->
+        <div class="form-group">
+          <div id="avatar-label" class="avatar-selector-label">Выбери аватарку</div>
+          <div id="avatars-grid" class="avatars-grid"></div>
+        </div>
+
+        <!-- Start Button -->
+        <button type="button" id="start-game-btn" class="primary-btn" disabled>НАЧАТЬ ИГРУ</button>
+
+        <!-- Setup Footer Hint -->
+        <p id="setup-footer-hint" class="setup-footer-hint">Каждый клик стоит 1 монету. Чем больше тратишь — тем выше рейтинг.</p>
+      </div>
+    </section>
+
+    <!-- 2. MAIN GAME SCREEN -->
+    <section id="game-screen" class="screen game-screen">
+      <!-- Top Bar -->
+      <header class="game-top-bar">
+        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu">☰</button>
+        
+        <button type="button" id="rating-pill" class="pill-btn">
+          <span id="rating-pill-text">Waste рейтинг: 0</span>
+        </button>
+
+        <button type="button" id="coins-pill" class="pill-btn">
+          <span id="coins-pill-text">🪙 5</span>
+        </button>
+      </header>
+
+      <!-- Center Game Content -->
+      <main class="game-center-content">
+        <div id="motivational-quote" class="motivational-quote">
+          Готов доказать, что ты не как все?
+        </div>
+
+        <div class="waste-button-container">
+          <div id="waste-btn-ring" class="waste-button-outer-ring">
+            <button type="button" id="waste-btn" class="waste-button-inner">
+              <span id="waste-btn-text" class="waste-button-text">WASTE</span>
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <footer style="height: 20px;"></footer>
+    </section>
+
+    <!-- 3. DRAWER MENU -->
+    <div id="drawer-overlay" class="drawer-overlay">
+      <div class="drawer-content">
+        <div class="drawer-handle"></div>
+
+        <div class="drawer-profile-header">
+          <div id="drawer-avatar" class="drawer-avatar">👑</div>
+          <div id="drawer-nick" class="drawer-nick">Player</div>
+          <div id="drawer-meta" class="drawer-meta">KZ · RU</div>
+        </div>
+
+        <div class="drawer-menu-list">
+          <button type="button" id="drawer-rating-btn" class="drawer-menu-item">
+            <span class="drawer-menu-icon">📊</span>
+            <span class="drawer-menu-text">Waste рейтинг</span>
+          </button>
+
+          <button type="button" id="drawer-topup-btn" class="drawer-menu-item">
+            <span class="drawer-menu-icon">💰</span>
+            <span class="drawer-menu-text">Пополнение баланса</span>
+          </button>
+
+          <button type="button" id="drawer-lang-btn" class="drawer-menu-item">
+            <span class="drawer-menu-icon">🌐</span>
+            <span class="drawer-menu-text">Язык приложения</span>
+          </button>
+
+          <button type="button" id="drawer-country-btn" class="drawer-menu-item">
+            <span class="drawer-menu-icon">🚩</span>
+            <span class="drawer-menu-text">Страна игрока</span>
+          </button>
+
+          <button type="button" id="drawer-avatar-btn" class="drawer-menu-item">
+            <span class="drawer-menu-icon">😎</span>
+            <span class="drawer-menu-text">Сменить аватар</span>
+          </button>
+
+          <button type="button" id="drawer-reset-btn" class="drawer-menu-item danger">
+            <span class="drawer-menu-icon">🔄</span>
+            <span class="drawer-menu-text">Сбросить профиль</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. LEADERBOARD MODAL -->
+    <div id="leaderboard-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="leaderboard-title" class="modal-title">РЕЙТИНГ</span>
+          <button type="button" id="leaderboard-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="leaderboard-tabs">
+            <button type="button" id="tab-world" class="tab-btn active">WORLD</button>
+            <button type="button" id="tab-country" class="tab-btn">COUNTRY · KZ</button>
+          </div>
+          <div id="leaderboard-subhead" class="leaderboard-subhead">ещё 0 → #55</div>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. PAYWALL / LIMIT MODAL -->
+    <div id="paywall-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="paywall-title" class="modal-title" style="color: #f87171;">🚫 Ты дошёл до границы</span>
+          <button type="button" id="paywall-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body paywall-body">
+          <p id="paywall-body" class="paywall-subtitle">95% игроков останавливаются здесь.<br>Ты другой?</p>
+          <button type="button" id="paywall-100-btn" class="package-btn">
+            <span class="package-amount">100 монет</span>
+            <span id="paywall-100-tag" class="package-tag">🔥 Популярно</span>
+          </button>
+          <button type="button" id="paywall-500-btn" class="package-btn">
+            <span class="package-amount">500 монет</span>
+            <span id="paywall-500-tag" class="package-tag">💎 Выгодно</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. TOP UP BALANCE MODAL -->
+    <div id="topup-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="topup-title" class="modal-title">Пополнение баланса</span>
+          <button type="button" id="topup-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p id="topup-body" style="color: var(--text-secondary); font-size: 14px; line-height: 1.5;">
+            Позже здесь подключим оплату. Пока добавим тестовые монеты.
+          </p>
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" id="topup-cancel-btn" class="select-btn" style="flex: 1; justify-content: center;">Отмена</button>
+            <button type="button" id="topup-add-btn" class="primary-btn" style="flex: 1; margin: 0;">+100 монет</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. COUNTRY SELECTOR MODAL -->
+    <div id="country-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span class="modal-title">Страна игрока</span>
+          <button type="button" id="country-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="country-search" class="search-input" placeholder="Поиск">
+          <div id="country-list" class="options-scroll-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. LANGUAGE SELECTOR MODAL -->
+    <div id="lang-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span class="modal-title">Язык приложения</span>
+          <button type="button" id="lang-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="lang-search" class="search-input" placeholder="Поиск">
+          <div id="lang-list" class="options-scroll-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. AVATAR SELECTOR MODAL -->
+    <div id="avatar-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="avatar-modal-title" class="modal-title">Выбери аватарку</span>
+          <button type="button" id="avatar-modal-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="avatar-modal-grid" class="avatars-grid"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
