@@ -1,1 +1,2145 @@
-node -e "process.stdout.write(require('fs').readFileSync('index.html', 'utf8'))"
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Money Waster</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23141418' stroke='%23f59e0b' stroke-width='6'/><circle cx='50' cy='50' r='35' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-dasharray='4,4'/><text x='50' y='64' font-size='42' font-family='sans-serif' font-weight='bold' fill='%23f59e0b' text-anchor='middle'>W</text></svg>">
+</head>
+<body>
+  <div id="app-container">
+    
+    <!-- 1. SETUP SCREEN (PROFILE CREATION) -->
+    <section id="setup-screen" class="screen active">
+      <div class="setup-card">
+        <h1 id="app-title" class="app-title">MONEY WASTER</h1>
+        <p id="setup-subtitle" class="setup-subtitle">Создай профиль игрока</p>
+
+        <!-- Nickname Input -->
+        <div class="form-group">
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon svg-icon-gold" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input type="text" id="nick-input" class="input-control" maxlength="16" placeholder="Например: ClickLord" autocomplete="off" spellcheck="false">
+          </div>
+          <div id="char-count" class="input-hint">16 characters remaining</div>
+        </div>
+
+        <!-- Country Select -->
+        <div class="form-group">
+          <button type="button" id="setup-country-btn" class="select-btn">
+            <div class="select-btn-content">
+              <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon svg-icon-gold" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              <span id="setup-country-text">Страна игрока: <img src="https://flagcdn.com/24x18/kz.png" srcset="https://flagcdn.com/48x36/kz.png 2x" class="country-flag-img" width="20" height="15" alt="KZ"> Kazakhstan</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="svg-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+
+        <!-- Language Select -->
+        <div class="form-group">
+          <button type="button" id="setup-lang-btn" class="select-btn">
+            <div class="select-btn-content">
+              <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon svg-icon-gold" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              <span id="setup-lang-text">Язык приложения: Русский</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="svg-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+
+        <!-- Avatar Choice -->
+        <div class="form-group">
+          <div id="avatar-label" class="avatar-selector-label">Выбери аватарку</div>
+          <div id="avatars-grid" class="avatars-grid">
+            <button type="button" class="avatar-choice selected" data-avatar="👑">👑</button>
+            <button type="button" class="avatar-choice" data-avatar="🔥">🔥</button>
+            <button type="button" class="avatar-choice" data-avatar="💎">💎</button>
+            <button type="button" class="avatar-choice" data-avatar="🚀">🚀</button>
+            <button type="button" class="avatar-choice" data-avatar="🦁">🦁</button>
+            <button type="button" class="avatar-choice" data-avatar="🐉">🐉</button>
+            <button type="button" class="avatar-choice" data-avatar="🤑">🤑</button>
+            <button type="button" class="avatar-choice" data-avatar="⚡">⚡</button>
+          </div>
+        </div>
+
+        <!-- Start Button -->
+        <button type="button" id="start-game-btn" class="primary-btn" disabled>НАЧАТЬ ИГРУ</button>
+
+        <!-- Setup Footer Hint -->
+        <p id="setup-footer-hint" class="setup-footer-hint">Каждый клик стоит 1 монету. Чем больше тратишь — тем выше рейтинг.</p>
+      </div>
+    </section>
+
+    <!-- 2. MAIN GAME SCREEN -->
+    <section id="game-screen" class="screen game-screen">
+      <!-- Top Bar -->
+      <header class="game-top-bar">
+        <button type="button" id="menu-btn" class="icon-btn" aria-label="Menu">
+          <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        
+        <button type="button" id="rating-pill" class="pill-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon-gold"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H8v4h8v-4h-1c-.55 0-1-.45-1-1v-2.34"/><path d="M18 4H6v7a6 6 0 0 0 12 0V4z"/></svg>
+          <span id="rating-pill-text">Waste рейтинг: 0</span>
+        </button>
+
+        <button type="button" id="coins-pill" class="pill-btn coin-pill">
+          <span class="coin-icon-circle">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#141418" stroke="#f59e0b" stroke-width="9"/><circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="4,4"/><text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#f59e0b" text-anchor="middle">W</text></svg>
+          </span>
+          <span id="coins-pill-text">5</span>
+        </button>
+      </header>
+
+      <!-- Center Game Content -->
+      <main class="game-center-content">
+        <div id="motivational-quote" class="motivational-quote">
+          Готов доказать, что ты не как все?
+        </div>
+
+        <div class="waste-button-container">
+          <div id="waste-btn-ring" class="waste-button-outer-ring">
+            <button type="button" id="waste-btn" class="waste-button-inner">
+              <span id="waste-btn-text" class="waste-button-text">WASTE</span>
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <footer style="height: 20px;"></footer>
+    </section>
+
+    <!-- 3. DRAWER MENU -->
+    <div id="drawer-overlay" class="drawer-overlay">
+      <div class="drawer-content">
+        <div class="drawer-handle"></div>
+
+        <div class="drawer-profile-header">
+          <div id="drawer-avatar" class="drawer-avatar">👑</div>
+          <div id="drawer-nick" class="drawer-nick">Player</div>
+          <div id="drawer-meta" class="drawer-meta">KZ · RU</div>
+        </div>
+
+        <div class="drawer-menu-list">
+          <button type="button" id="drawer-rating-btn" class="drawer-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="#ffb800"><path d="M5 9.2h3V19H5zM10.5 5h3v14h-3zM16 12h3v7h-3z"/></svg>
+            <span class="drawer-menu-text">Waste рейтинг</span>
+          </button>
+
+          <button type="button" id="drawer-topup-btn" class="drawer-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="#ffb800"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-1.5c-1.42-.25-2.5-1.22-2.5-2.5h2c0 .55.45 1 1 1s1-.45 1-1c0-.55-.45-1-1-1-1.66 0-3-1.34-3-3 0-1.28 1.08-2.25 2.5-2.5V5h2v1.5c1.42.25 2.5 1.22 2.5 2.5h-2c0-.55-.45-1-1-1s-1 .45-1 1c0 .55.45 1 1 1 1.66 0 3 1.34 3 3 0 1.28-1.08 2.25-2.5 2.5V16z"/></svg>
+            <span class="drawer-menu-text">Пополнение баланса</span>
+          </button>
+
+          <button type="button" id="drawer-lang-btn" class="drawer-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span class="drawer-menu-text">Язык приложения</span>
+          </button>
+
+          <button type="button" id="drawer-country-btn" class="drawer-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="#ffb800"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+            <span class="drawer-menu-text">Страна игрока</span>
+          </button>
+
+          <button type="button" id="drawer-avatar-btn" class="drawer-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="#ffb800"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+            <span class="drawer-menu-text">Сменить аватар</span>
+          </button>
+
+          <button type="button" id="drawer-sound-btn" class="drawer-menu-item drawer-menu-toggle">
+            <div class="drawer-menu-toggle-content">
+              <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <span class="drawer-menu-text" id="drawer-sound-text">Звуковые эффекты</span>
+            </div>
+            <span id="drawer-sound-status" class="drawer-toggle-switch active">
+              <span class="drawer-toggle-knob"></span>
+            </span>
+          </button>
+
+          <button type="button" id="drawer-haptics-btn" class="drawer-menu-item drawer-menu-toggle">
+            <div class="drawer-menu-toggle-content">
+              <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M1 9l2 3-2 3M23 9l-2 3 2 3"/></svg>
+              <span class="drawer-menu-text" id="drawer-haptics-text">Вибрация (Haptic)</span>
+            </div>
+            <span id="drawer-haptics-status" class="drawer-toggle-switch active">
+              <span class="drawer-toggle-knob"></span>
+            </span>
+          </button>
+
+          <button type="button" id="drawer-reset-btn" class="drawer-menu-item">
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-menu-svg" viewBox="0 0 24 24" fill="none" stroke="#ffb800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            <span class="drawer-menu-text">Сбросить профиль</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. LEADERBOARD MODAL -->
+    <div id="leaderboard-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="leaderboard-title" class="modal-title">РЕЙТИНГ</span>
+          <button type="button" id="leaderboard-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="leaderboard-tabs">
+            <button type="button" id="tab-world" class="tab-btn active">WORLD</button>
+            <button type="button" id="tab-country" class="tab-btn">COUNTRY · KZ</button>
+          </div>
+          <div id="leaderboard-subhead" class="leaderboard-subhead">ещё 0 → #55</div>
+          <div id="leaderboard-list" class="leaderboard-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. PAYWALL / LIMIT MODAL -->
+    <div id="paywall-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="paywall-title" class="modal-title" style="color: #f87171; display: flex; align-items: center; gap: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="svg-icon-danger" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            <span>Ты дошёл до границы</span>
+          </span>
+          <button type="button" id="paywall-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body paywall-body">
+          <p id="paywall-body" class="paywall-subtitle">95% игроков останавливаются здесь.<br>Ты другой?</p>
+          <button type="button" id="paywall-100-btn" class="package-btn">
+            <span class="package-amount" style="display: flex; align-items: center; gap: 6px;">
+              <span class="coin-icon-circle" style="width: 20px; height: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#141418" stroke="#f59e0b" stroke-width="9"/><circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="4,4"/><text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#f59e0b" text-anchor="middle">W</text></svg>
+              </span>
+              <span>100 монет</span>
+            </span>
+            <span id="paywall-100-tag" class="package-tag">
+              <svg xmlns="http://www.w3.org/2000/svg" class="svg-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              <span>Популярно</span>
+            </span>
+          </button>
+          <button type="button" id="paywall-500-btn" class="package-btn">
+            <span class="package-amount" style="display: flex; align-items: center; gap: 6px;">
+              <span class="coin-icon-circle" style="width: 20px; height: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#141418" stroke="#f59e0b" stroke-width="9"/><circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="4,4"/><text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#f59e0b" text-anchor="middle">W</text></svg>
+              </span>
+              <span>500 монет</span>
+            </span>
+            <span id="paywall-500-tag" class="package-tag">
+              <svg xmlns="http://www.w3.org/2000/svg" class="svg-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3v19"/><path d="M2 9h20"/></svg>
+              <span>Выгодно</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. TOP UP BALANCE MODAL -->
+    <div id="topup-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="topup-title" class="modal-title">Пополнение баланса</span>
+          <button type="button" id="topup-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <p id="topup-body" style="color: var(--text-secondary); font-size: 14px; line-height: 1.5;">
+            Позже здесь подключим оплату. Пока добавим тестовые монеты.
+          </p>
+          <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button type="button" id="topup-cancel-btn" class="select-btn" style="flex: 1; justify-content: center;">Отмена</button>
+            <button type="button" id="topup-add-btn" class="primary-btn" style="flex: 1; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <span class="coin-icon-circle" style="width: 20px; height: 20px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#141418" stroke="#000000" stroke-width="9"/><circle cx="50" cy="50" r="35" fill="none" stroke="#000000" stroke-width="3.5" stroke-dasharray="4,4"/><text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#000000" text-anchor="middle">W</text></svg>
+              </span>
+              <span>+100 монет</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. COUNTRY SELECTOR MODAL -->
+    <div id="country-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span class="modal-title">Страна игрока</span>
+          <button type="button" id="country-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="country-search" class="search-input" placeholder="Поиск">
+          <div id="country-list" class="options-scroll-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. LANGUAGE SELECTOR MODAL -->
+    <div id="lang-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span class="modal-title">Язык приложения</span>
+          <button type="button" id="lang-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="text" id="lang-search" class="search-input" placeholder="Поиск">
+          <div id="lang-list" class="options-scroll-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. AVATAR SELECTOR MODAL -->
+    <div id="avatar-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <span id="avatar-modal-title" class="modal-title">Выбери аватарку</span>
+          <button type="button" id="avatar-modal-close" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="avatar-modal-grid" class="avatars-grid"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+(function() {
+'use strict';
+
+// --- Module: js/countries.js ---
+const COUNTRIES = [
+  { code: 'KZ', name: 'Kazakhstan', flag: '🇰🇿' },
+  { code: 'US', name: 'United States', flag: '🇺🇸' },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺' },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+  { code: 'FR', name: 'France', flag: '🇫🇷' },
+  { code: 'ES', name: 'Spain', flag: '🇪🇸' },
+  { code: 'PT', name: 'Portugal', flag: '🇵🇹' },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷' },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'TR', name: 'Türkiye', flag: '🇹🇷' },
+  { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪' },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦' },
+  { code: 'IL', name: 'Israel', flag: '🇮🇱' },
+  { code: 'IN', name: 'India', flag: '🇮🇳' },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩' },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾' },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬' },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭' },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳' },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭' },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷' },
+  { code: 'CN', name: 'China', flag: '🇨🇳' },
+  { code: 'TW', name: 'Taiwan', flag: '🇹🇼' },
+  { code: 'HK', name: 'Hong Kong', flag: '🇭🇰' },
+  { code: 'PL', name: 'Poland', flag: '🇵🇱' },
+  { code: 'CZ', name: 'Czechia', flag: '🇨🇿' },
+  { code: 'SK', name: 'Slovakia', flag: '🇸🇰' },
+  { code: 'HU', name: 'Hungary', flag: '🇭🇺' },
+  { code: 'RO', name: 'Romania', flag: '🇷🇴' },
+  { code: 'BG', name: 'Bulgaria', flag: '🇧🇬' },
+  { code: 'GR', name: 'Greece', flag: '🇬🇷' },
+  { code: 'IT', name: 'Italy', flag: '🇮🇹' },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱' },
+  { code: 'BE', name: 'Belgium', flag: '🇧🇪' },
+  { code: 'AT', name: 'Austria', flag: '🇦🇹' },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭' },
+  { code: 'SE', name: 'Sweden', flag: '🇸🇪' },
+  { code: 'NO', name: 'Norway', flag: '🇳🇴' },
+  { code: 'DK', name: 'Denmark', flag: '🇩🇰' },
+  { code: 'FI', name: 'Finland', flag: '🇫🇮' },
+  { code: 'UA', name: 'Ukraine', flag: '🇺🇦' },
+  { code: 'GE', name: 'Georgia', flag: '🇬🇪' },
+  { code: 'AM', name: 'Armenia', flag: '🇦🇲' },
+  { code: 'AZ', name: 'Azerbaijan', flag: '🇦🇿' },
+  { code: 'UZ', name: 'Uzbekistan', flag: '🇺🇿' },
+  { code: 'KG', name: 'Kyrgyzstan', flag: '🇰🇬' },
+  { code: 'RU', name: 'Russia', flag: '🇷🇺' }
+];
+
+function getCountryByCode(code) {
+  return COUNTRIES.find(c => c.code === code) || COUNTRIES[0];
+}
+
+function getCountryFlagImg(code) {
+  if (!code) return '';
+  const c = code.toLowerCase();
+  return `<img src="https://flagcdn.com/24x18/${c}.png" srcset="https://flagcdn.com/48x36/${c}.png 2x" width="20" height="15" alt="${code}" class="country-flag-img" loading="lazy">`;
+}
+
+function updateScrollMask(el) {
+  if (!el) return;
+  const { scrollTop, scrollHeight, clientHeight } = el;
+  const isOverflowing = scrollHeight > clientHeight + 4;
+  
+  if (!isOverflowing) {
+    el.style.setProperty('--mask-top', '#000');
+    el.style.setProperty('--mask-top-stop', '0px');
+    el.style.setProperty('--mask-bottom', '#000');
+    el.style.setProperty('--mask-bottom-stop', '0px');
+    return;
+  }
+
+  const isAtTop = scrollTop <= 4;
+  const isAtBottom = scrollTop + clientHeight >= scrollHeight - 4;
+
+  el.style.setProperty('--mask-top', isAtTop ? '#000' : 'transparent');
+  el.style.setProperty('--mask-top-stop', isAtTop ? '0px' : '28px');
+  el.style.setProperty('--mask-bottom', isAtBottom ? '#000' : 'transparent');
+  el.style.setProperty('--mask-bottom-stop', isAtBottom ? '0px' : '28px');
+}
+
+function bindScrollMask(el) {
+  if (!el || el._hasScrollMaskBound) return;
+  el._hasScrollMaskBound = true;
+  el.addEventListener('scroll', () => updateScrollMask(el), { passive: true });
+}
+
+// --- Module: js/i18n.js ---
+const LANGUAGES = [
+  { code: 'EN', name: 'English' },
+  { code: 'RU', name: 'Русский' },
+  { code: 'KZ', name: 'Қазақша' },
+  { code: 'ES', name: 'Español' },
+  { code: 'PT', name: 'Português' },
+  { code: 'DE', name: 'Deutsch' },
+  { code: 'FR', name: 'Français' },
+  { code: 'TR', name: 'Türkçe' },
+  { code: 'ZH', name: '简体中文' },
+  { code: 'ID', name: 'Bahasa Indonesia' }
+];
+
+const TRANSLATIONS = {
+  EN: {
+    profileTitle: 'Create your player profile',
+    nick: 'Player name',
+    nickHint: 'For example: ClickLord',
+    country: 'Player country',
+    language: 'App language',
+    avatar: 'Choose an avatar',
+    start: 'START GAME',
+    setupHint: 'Every click costs 1 coin. The more you waste, the higher your rating.',
+    nickEmpty: 'Enter a player name',
+    nickShort: 'Player name must be at least 3 characters',
+    rating: 'Waste rating',
+    world: 'WORLD',
+    countryTab: 'COUNTRY',
+    leader: 'You are the leader',
+    moreTo: 'more to',
+    appLanguage: 'App language',
+    sound: 'Sound FX',
+    haptics: 'Haptic Feedback',
+    resetProfile: 'Reset profile',
+    changeAvatar: 'Change avatar',
+    initialMessage: 'Ready to prove you are not like everyone else?',
+    balanceAdded: 'Balance refilled. The road to the top is open.',
+    topUpTitle: 'Top up balance',
+    topUpBody: 'Payments will be connected here later. For now, add test coins.',
+    cancel: 'Cancel',
+    add100Coins: '+100 coins',
+    paywallTitle: '🚫 You reached the limit',
+    paywallBody: '95% of players stop here.\nAre you different?',
+    coins100: '100 coins',
+    coins500: '500 coins',
+    popular: '🔥 Popular',
+    valueDeal: '💎 Best value',
+    ratingTitle: 'RATING',
+    search: 'Search',
+    quotes: [
+      'Most people would not do it.',
+      'That is how the ranking moves.',
+      'The leaderboard noticed that.',
+      'You are already ahead of those who stopped.',
+      'Status is built one decision at a time.',
+      'While someone doubted, you moved.',
+      'The momentum belongs to the one who keeps going.',
+      'The gap just got smaller.',
+      'One more reason to defend your place.',
+      'You are making that number your own.'
+    ]
+  },
+  RU: {
+    profileTitle: 'Создай профиль игрока',
+    nick: 'Игровой ник',
+    nickHint: 'Например: ClickLord',
+    country: 'Страна игрока',
+    language: 'Язык приложения',
+    avatar: 'Выбери аватарку',
+    start: 'НАЧАТЬ ИГРУ',
+    setupHint: 'Каждый клик стоит 1 монету. Чем больше тратишь — тем выше рейтинг.',
+    nickEmpty: 'Введите игровой ник',
+    nickShort: 'Ник должен быть минимум 3 символа',
+    rating: 'Waste рейтинг',
+    world: 'WORLD',
+    countryTab: 'COUNTRY',
+    leader: 'Ты лидер',
+    moreTo: 'ещё',
+    appLanguage: 'Язык приложения',
+    sound: 'Звуковые эффекты',
+    haptics: 'Вибрация (Haptic)',
+    resetProfile: 'Сбросить профиль',
+    changeAvatar: 'Сменить аватар',
+    initialMessage: 'Готов доказать, что ты не как все?',
+    balanceAdded: 'Баланс пополнен. Путь к вершине открыт.',
+    topUpTitle: 'Пополнение баланса',
+    topUpBody: 'Позже здесь подключим оплату. Пока добавим тестовые монеты.',
+    cancel: 'Отмена',
+    add100Coins: '+100 монет',
+    paywallTitle: '🚫 Ты дошёл до границы',
+    paywallBody: '95% игроков останавливаются здесь.\nТы другой?',
+    coins100: '100 монет',
+    coins500: '500 монет',
+    popular: '🔥 Популярно',
+    valueDeal: '💎 Выгодно',
+    ratingTitle: 'РЕЙТИНГ',
+    search: 'Поиск',
+    quotes: [
+      'Большинство бы не нажало.',
+      'Именно так двигается рейтинг.',
+      'Таблица лидеров это заметила.',
+      'Ты уже впереди тех, кто остановился.',
+      'Статус строится по одному решению за раз.',
+      'Пока кто-то сомневался, ты двигался.',
+      'Темп принадлежит тому, кто продолжает.',
+      'Разрыв только что стал меньше.',
+      'Ещё одна причина удерживать своё место.',
+      'Ты делаешь это число своим.'
+    ]
+  },
+  KZ: {
+    profileTitle: 'Ойыншы профилін жаса',
+    nick: 'Ойын аты',
+    nickHint: 'Мысалы: ClickLord',
+    country: 'Ойыншы елі',
+    language: 'Қолданба тілі',
+    avatar: 'Аватарды таңда',
+    start: 'ОЙЫНДЫ БАСТАУ',
+    setupHint: 'Әр басу 1 монета тұрады. Неғұрлым көп жұмсасаң, рейтингің соғұрлым жоғары.',
+    nickEmpty: 'Ойын атын енгізіңіз',
+    nickShort: 'Ойын аты кемінде 3 таңбадан тұруы керек',
+    rating: 'Waste рейтингі',
+    world: 'ӘЛЕМ',
+    countryTab: 'ЕЛ',
+    leader: 'Сен көшбасшысың',
+    moreTo: 'қалды',
+    appLanguage: 'Қолданба тілі',
+    sound: 'Дыбыс эффектілері',
+    haptics: 'Діріл (Haptic)',
+    resetProfile: 'Профильді тазарту',
+    changeAvatar: 'Аватарды өзгерту',
+    initialMessage: 'Басқалардан ерекше екеніңді дәлелдеуге дайынсың ба?',
+    balanceAdded: 'Баланс толтырылды. Шыңға апарар жол ашық.',
+    topUpTitle: 'Балансты толтыру',
+    topUpBody: 'Төлемді кейін осында қосамыз. Әзірге сынақ монеталарын қосайық.',
+    cancel: 'Бас тарту',
+    add100Coins: '+100 монета',
+    paywallTitle: '🚫 Сен шегіне жеттің',
+    paywallBody: 'Ойыншылардың 95%-ы осы жерде тоқтайды.\nАл сен ше?',
+    coins100: '100 монета',
+    coins500: '500 монета',
+    popular: '🔥 Танымал',
+    valueDeal: '💎 Тиімді',
+    ratingTitle: 'РЕЙТИНГ',
+    search: 'Іздеу',
+    quotes: [
+      'Көпшілік баспас еді.',
+      'Рейтинг дәл осылай қозғалады.',
+      'Көшбасшылар кестесі мұны байқады.',
+      'Тоқтағандардан сен әлдеқашан алдасың.',
+      'Мәртебе әр шешіммен құрылады.',
+      'Біреу күмәнданғанда, сен қозғалып кеттің.',
+      'Қарқын жалғастырған адамға тиесілі.',
+      'Ара қашықтық азайды.',
+      'Орныңды ұстап қалуға тағы бір себеп.',
+      'Бұл сан енді сенікі болып келеді.'
+    ]
+  },
+  ES: {
+    profileTitle: 'Crea tu perfil de jugador',
+    nick: 'Nombre de jugador',
+    nickHint: 'Por ejemplo: ClickLord',
+    country: 'País del jugador',
+    language: 'Idioma de la app',
+    avatar: 'Elige un avatar',
+    start: 'EMPEZAR',
+    setupHint: 'Cada toque cuesta 1 moneda. Cuanto más gastas, más sube tu ranking.',
+    nickEmpty: 'Introduce un nombre',
+    nickShort: 'El nombre debe tener al menos 3 caracteres',
+    rating: 'Ranking Waste',
+    world: 'MUNDO',
+    countryTab: 'PAÍS',
+    leader: 'Eres el líder',
+    moreTo: 'más para',
+    appLanguage: 'Idioma de la app',
+    sound: 'Efectos de sonido',
+    haptics: 'Vibración (Haptic)',
+    resetProfile: 'Restablecer perfil',
+    changeAvatar: 'Cambiar avatar',
+    initialMessage: '¿Listo para demostrar que no eres como los demás?',
+    balanceAdded: 'Saldo recargado. El camino a la cima está abierto.',
+    topUpTitle: 'Recargar saldo',
+    topUpBody: 'Más adelante conectaremos los pagos. Por ahora, añade monedas de prueba.',
+    cancel: 'Cancelar',
+    add100Coins: '+100 monedas',
+    paywallTitle: '🚫 Llegaste al límite',
+    paywallBody: 'El 95% de los jugadores se detiene aquí.\n¿Tú eres diferente?',
+    coins100: '100 monedas',
+    coins500: '500 monedas',
+    popular: '🔥 Popular',
+    valueDeal: '💎 Mejor valor',
+    ratingTitle: 'CLASIFICACIÓN',
+    search: 'Buscar',
+    quotes: [
+      'La mayoría no lo haría.',
+      'Así es como sube el ranking.',
+      'La clasificación lo ha notado.',
+      'Ya vas por delante de quienes se pararon.',
+      'El estatus se construye decisión a decisión.',
+      'Alguien dudó mientras tú avanzabas.',
+      'El impulso es de quien continúa.',
+      'La distancia acaba de reducirse.',
+      'Una razón más para defender tu puesto.',
+      'Estás haciendo tuyo ese número.'
+    ]
+  },
+  PT: {
+    profileTitle: 'Crie seu perfil de jogador',
+    nick: 'Nome do jogador',
+    nickHint: 'Por exemplo: ClickLord',
+    country: 'País do jogador',
+    language: 'Idioma do app',
+    avatar: 'Escolha um avatar',
+    start: 'COMEÇAR',
+    setupHint: 'Cada toque custa 1 moeda. Quanto mais você gasta, maior fica seu ranking.',
+    nickEmpty: 'Digite um nome',
+    nickShort: 'O nome deve ter pelo menos 3 caracteres',
+    rating: 'Ranking Waste',
+    world: 'MUNDO',
+    countryTab: 'PAÍS',
+    leader: 'Você é o líder',
+    moreTo: 'a mais para',
+    appLanguage: 'Idioma do app',
+    sound: 'Efeitos sonoros',
+    haptics: 'Vibração (Haptic)',
+    resetProfile: 'Redefinir perfil',
+    changeAvatar: 'Alterar avatar',
+    initialMessage: 'Pronto para provar que você não é como todo mundo?',
+    balanceAdded: 'Saldo recarregado. O caminho para o topo está aberto.',
+    topUpTitle: 'Adicionar saldo',
+    topUpBody: 'Depois conectaremos os pagamentos. Por enquanto, adicione moedas de teste.',
+    cancel: 'Cancelar',
+    add100Coins: '+100 moedas',
+    paywallTitle: '🚫 Você chegou ao limite',
+    paywallBody: '95% dos jogadores param aqui.\nVocê é diferente?',
+    coins100: '100 moedas',
+    coins500: '500 moedas',
+    popular: '🔥 Popular',
+    valueDeal: '💎 Melhor valor',
+    ratingTitle: 'RANKING',
+    search: 'Pesquisar',
+    quotes: [
+      'A maioria não faria.',
+      'É assim que o ranking se move.',
+      'A classificação percebeu.',
+      'Você já está à frente de quem parou.',
+      'Status se constrói uma decisão por vez.',
+      'Alguém hesitou enquanto você avançou.',
+      'O ritmo pertence a quem continua.',
+      'A distância acabou de diminuir.',
+      'Mais um motivo para segurar sua posição.',
+      'Você está fazendo esse número ser seu.'
+    ]
+  },
+  DE: {
+    profileTitle: 'Erstelle dein Spielerprofil',
+    nick: 'Spielername',
+    nickHint: 'Zum Beispiel: ClickLord',
+    country: 'Land des Spielers',
+    language: 'App-Sprache',
+    avatar: 'Avatar auswählen',
+    start: 'SPIEL STARTEN',
+    setupHint: 'Jeder Klick kostet 1 Münze. Je mehr du verschwendest, desto höher dein Rang.',
+    nickEmpty: 'Spielernamen eingeben',
+    nickShort: 'Der Name muss mindestens 3 Zeichen lang sein',
+    rating: 'Waste-Rang',
+    world: 'WELT',
+    countryTab: 'LAND',
+    leader: 'Du bist der Spitzenreiter',
+    moreTo: 'mehr bis',
+    appLanguage: 'App-Sprache',
+    sound: 'Soundeffekte',
+    haptics: 'Haptisches Feedback',
+    resetProfile: 'Profil zurücksetzen',
+    changeAvatar: 'Avatar ändern',
+    initialMessage: 'Bereit zu beweisen, dass du nicht wie alle anderen bist?',
+    balanceAdded: 'Guthaben aufgefüllt. Der Weg nach oben ist frei.',
+    topUpTitle: 'Guthaben aufladen',
+    topUpBody: 'Zahlungen kommen später. Vorerst gibt es Testmünzen.',
+    cancel: 'Abbrechen',
+    add100Coins: '+100 Münzen',
+    paywallTitle: '🚫 Du hast das Limit erreicht',
+    paywallBody: '95 % der Spieler hören hier auf.\nBist du anders?',
+    coins100: '100 Münzen',
+    coins500: '500 Münzen',
+    popular: '🔥 Beliebt',
+    valueDeal: '💎 Bester Wert',
+    ratingTitle: 'RANGLISTE',
+    search: 'Suchen',
+    quotes: [
+      'Die meisten würden es nicht tun.',
+      'So bewegt sich die Rangliste.',
+      'Das Leaderboard hat es bemerkt.',
+      'Du bist schon vor denen, die aufgehört haben.',
+      'Status entsteht Entscheidung für Entscheidung.',
+      'Während jemand zögerte, bist du weiter.',
+      'Momentum gehört dem, der weitermacht.',
+      'Der Abstand ist gerade kleiner geworden.',
+      'Noch ein Grund, deinen Platz zu halten.',
+      'Du machst diese Zahl zu deiner.'
+    ]
+  },
+  FR: {
+    profileTitle: 'Crée ton profil de joueur',
+    nick: 'Nom du joueur',
+    nickHint: 'Par exemple : ClickLord',
+    country: 'Pays du joueur',
+    language: 'Langue de l’app',
+    avatar: 'Choisis un avatar',
+    start: 'COMMENCER',
+    setupHint: 'Chaque clic coûte 1 pièce. Plus tu dépenses, plus ton classement monte.',
+    nickEmpty: 'Entre un nom de joueur',
+    nickShort: 'Le nom doit contenir au moins 3 caractères',
+    rating: 'Classement Waste',
+    world: 'MONDE',
+    countryTab: 'PAYS',
+    leader: 'Tu es en tête',
+    moreTo: 'de plus pour',
+    appLanguage: 'Langue de l’app',
+    sound: 'Effets sonores',
+    haptics: 'Retour haptique',
+    resetProfile: 'Réinitialiser le profil',
+    changeAvatar: 'Changer l’avatar',
+    initialMessage: 'Prêt à prouver que tu n’es pas comme les autres ?',
+    balanceAdded: 'Solde rechargé. La route vers le sommet est ouverte.',
+    topUpTitle: 'Recharger le solde',
+    topUpBody: 'Les paiements seront ajoutés plus tard. Pour l’instant, ajoute des pièces de test.',
+    cancel: 'Annuler',
+    add100Coins: '+100 pièces',
+    paywallTitle: '🚫 Tu as atteint la limite',
+    paywallBody: '95 % des joueurs s’arrêtent ici.\nEt toi ?',
+    coins100: '100 pièces',
+    coins500: '500 pièces',
+    popular: '🔥 Populaire',
+    valueDeal: '💎 Bon plan',
+    ratingTitle: 'CLASSEMENT',
+    search: 'Rechercher',
+    quotes: [
+      'La plupart ne l’auraient pas fait.',
+      'C’est comme ça qu’un classement bouge.',
+      'Le classement l’a remarqué.',
+      'Tu es déjà devant ceux qui se sont arrêtés.',
+      'Le statut se construit décision après décision.',
+      'Quelqu’un a hésité pendant que tu avançais.',
+      'L’élan appartient à celui qui continue.',
+      'L’écart vient de diminuer.',
+      'Une raison de plus de garder ta place.',
+      'Tu es en train de t’approprier ce nombre.'
+    ]
+  },
+  TR: {
+    profileTitle: 'Oyuncu profilini oluştur',
+    nick: 'Oyuncu adı',
+    nickHint: 'Örneğin: ClickLord',
+    country: 'Oyuncu ülkesi',
+    language: 'Uygulama dili',
+    avatar: 'Avatar seç',
+    start: 'OYUNU BAŞLAT',
+    setupHint: 'Her dokunuş 1 jeton. Ne kadar çok harcarsan sıralaman o kadar yükselir.',
+    nickEmpty: 'Oyuncu adı gir',
+    nickShort: 'Oyuncu adı en az 3 karakter olmalı',
+    rating: 'Waste sıralaması',
+    world: 'DÜNYA',
+    countryTab: 'ÜLKE',
+    leader: 'Lidersin',
+    moreTo: 'daha',
+    appLanguage: 'Uygulama dili',
+    sound: 'Ses efektleri',
+    haptics: 'Titreşim (Haptic)',
+    resetProfile: 'Profili sıfırla',
+    changeAvatar: 'Avatarı değiştir',
+    initialMessage: 'Herkes gibi olmadığını kanıtlamaya hazır mısın?',
+    balanceAdded: 'Bakiye yüklendi. Zirveye giden yol açık.',
+    topUpTitle: 'Bakiye yükle',
+    topUpBody: 'Ödemeleri daha sonra bağlayacağız. Şimdilik test jetonları ekle.',
+    cancel: 'İptal',
+    add100Coins: '+100 jeton',
+    paywallTitle: '🚫 Sınıra ulaştın',
+    paywallBody: 'Oyuncuların %95’i burada duruyor.\nSen farklı mısın?',
+    coins100: '100 jeton',
+    coins500: '500 jeton',
+    popular: '🔥 Popüler',
+    valueDeal: '💎 Avantajlı',
+    ratingTitle: 'SIRALAMA',
+    search: 'Ara',
+    quotes: [
+      'Çoğu kişi basmazdı.',
+      'Sıralama böyle yükselir.',
+      'Liderlik tablosu bunu fark etti.',
+      'Duranların önündesin.',
+      'Statü karar karar inşa edilir.',
+      'Biri tereddüt ederken sen ilerledin.',
+      'Momentum devam edenindir.',
+      'Aradaki fark azaldı.',
+      'Yerini korumak için bir neden daha.',
+      'Bu sayıyı kendinin yapıyorsun.'
+    ]
+  },
+  ZH: {
+    profileTitle: '创建玩家资料',
+    nick: '玩家昵称',
+    nickHint: '例如：ClickLord',
+    country: '玩家国家/地区',
+    language: '应用语言',
+    avatar: '选择头像',
+    start: '开始游戏',
+    setupHint: '每次点击消耗 1 枚金币。花得越多，排名越高。',
+    nickEmpty: '请输入玩家昵称',
+    nickShort: '昵称至少需要 3 个字符',
+    rating: 'Waste 排名',
+    world: '全球',
+    countryTab: '国家',
+    leader: '你是第一名',
+    moreTo: '还差',
+    appLanguage: '应用语言',
+    sound: '声音特效',
+    haptics: '触觉震动',
+    resetProfile: '重置资料',
+    changeAvatar: '更换头像',
+    initialMessage: '准备好证明你和别人不一样了吗？',
+    balanceAdded: '余额已补充。通往榜首的路已经打开。',
+    topUpTitle: '充值余额',
+    topUpBody: '之后会接入支付。现在先添加测试金币。',
+    cancel: '取消',
+    add100 Coins: '+100 金币',
+    paywallTitle: '🚫 你已到达极限',
+    paywallBody: '95%的玩家会停在这里。\n你会不一样吗？',
+    coins100: '100 金币',
+    coins500: '500 金币',
+    popular: '🔥 热门',
+    valueDeal: '💎 超值',
+    ratingTitle: '排行榜',
+    search: '搜索',
+    quotes: [
+      '大多数人不会这么做。',
+      '排名就是这样往上走的。',
+      '排行榜已经注意到了。',
+      '你已经超过那些停下来的人。',
+      '地位就是这样一次次决定出来的。',
+      '别人犹豫时，你已经前进了。',
+      '势头属于一直前进的人。',
+      '差距刚刚又缩小了。',
+      '这又多了一个守住位置的理由。',
+      '这个数字正在变成你的。'
+    ]
+  },
+  ID: {
+    profileTitle: 'Buat profil pemainmu',
+    nick: 'Nama pemain',
+    nickHint: 'Contoh: ClickLord',
+    country: 'Negara pemain',
+    language: 'Bahasa aplikasi',
+    avatar: 'Pilih avatar',
+    start: 'MULAI GAME',
+    setupHint: 'Setiap tap menghabiskan 1 koin. Semakin banyak kamu buang, semakin tinggi peringkatmu.',
+    nickEmpty: 'Masukkan nama pemain',
+    nickShort: 'Nama pemain minimal 3 karakter',
+    rating: 'Peringkat Waste',
+    world: 'DUNIA',
+    countryTab: 'NEGARA',
+    leader: 'Kamu pemimpin',
+    moreTo: 'lagi ke',
+    appLanguage: 'Bahasa aplikasi',
+    sound: 'Efek suara',
+    haptics: 'Getaran (Haptic)',
+    resetProfile: 'Reset profil',
+    changeAvatar: 'Ganti avatar',
+    initialMessage: 'Siap membuktikan bahwa kamu tidak sama seperti yang lain?',
+    balanceAdded: 'Saldo terisi. Jalan menuju puncak terbuka.',
+    topUpTitle: 'Isi saldo',
+    topUpBody: 'Pembayaran akan disambungkan nanti. Untuk sekarang, tambahkan koin tes.',
+    cancel: 'Batal',
+    add100Coins: '+100 koin',
+    paywallTitle: '🚫 Kamu mencapai batas',
+    paywallBody: '95% pemain berhenti di sini.\nKamu berbeda?',
+    coins100: '100 koin',
+    coins500: '500 koin',
+    popular: '🔥 Populer',
+    valueDeal: '💎 Paling untung',
+    ratingTitle: 'PERINGKAT',
+    search: 'Cari',
+    quotes: [
+      'Kebanyakan orang tidak akan melakukannya.',
+      'Begitulah peringkat bergerak naik.',
+      'Leaderboard memperhatikannya.',
+      'Kamu sudah di depan mereka yang berhenti.',
+      'Status dibangun satu keputusan demi satu.',
+      'Saat orang lain ragu, kamu bergerak.',
+      'Momentum milik orang yang terus maju.',
+      'Jaraknya baru saja mengecil.',
+      'Satu alasan lagi untuk menjaga posisimu.',
+      'Kamu sedang membuat angka itu jadi milikmu.'
+    ]
+  }
+};
+
+function t(lang, key) {
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS.EN;
+  return dict[key] || TRANSLATIONS.EN[key] || key;
+}
+
+function getRandomQuote(lang) {
+  const dict = TRANSLATIONS[lang] || TRANSLATIONS.EN;
+  const quotes = dict.quotes || TRANSLATIONS.EN.quotes;
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  return quotes[randomIndex];
+}
+
+// --- Module: js/leaderboard.js ---
+
+const TOP_BOTS = [
+  { name: 'GoldenTap', country: 'US', avatar: '👑', score: 145286 },
+  { name: 'ClickLord', country: 'KZ', avatar: '🔥', score: 139369 },
+  { name: 'MoneyKing', country: 'AE', avatar: '💎', score: 128400 },
+  { name: 'WasteBaron', country: 'RU', avatar: '🦁', score: 98420 },
+  { name: 'TapStorm', country: 'TR', avatar: '⚡', score: 87210 },
+  { name: 'CoinBurner', country: 'DE', avatar: '🚀', score: 76350 },
+  { name: 'FastFinger', country: 'US', avatar: '🤑', score: 64100 },
+  { name: 'BigWaste', country: 'KZ', avatar: '🤑', score: 41200 },
+  { name: 'GoldRush', country: 'AE', avatar: '💎', score: 28900 },
+  { name: 'PulseTap', country: 'TR', avatar: '⚡', score: 18720 },
+  { name: 'AshHeap', country: 'KZ', avatar: '🚀', score: 12840 },
+  { name: 'DustRich', country: 'DE', avatar: '💎', score: 9900 },
+  { name: 'ThinWallet', country: 'RU', avatar: '🦁', score: 7200 },
+  { name: 'SoftTap', country: 'TR', avatar: '⚡', score: 5400 },
+  { name: 'NearZero', country: 'US', avatar: '🐉', score: 3100 },
+  { name: 'FirstCoin', country: 'KZ', avatar: '🤑', score: 1200 },
+  { name: 'WarmUp', country: 'AE', avatar: '👑', score: 640 },
+  { name: 'RookieBurn', country: 'DE', avatar: '🔥', score: 280 },
+  { name: 'TinyWaste', country: 'RU', avatar: '🚀', score: 90 },
+  { name: 'Spark', country: 'TR', avatar: '⚡', score: 25 }
+];
+
+function generateProceduralBots() {
+  const bots = [];
+  for (let s = 0; s <= 30; s++) {
+    const numStr = s.toString().padStart(2, '0');
+    const country = (s % 2 === 0) ? 'KZ' : 'US';
+    const avatar = (s % 3 === 0) ? '⚡' : (s % 3 === 1 ? '🔥' : '💎');
+    bots.push({
+      name: 'TestWaste' + numStr,
+      country,
+      avatar,
+      score: s,
+      isPlayer: false
+    });
+  }
+  return bots;
+}
+
+function getLeaderboardData(scope, playerState) {
+  const procedural = generateProceduralBots();
+  const allBots = [
+    ...TOP_BOTS.map(b => ({ ...b, isPlayer: false })),
+    ...procedural
+  ];
+
+  let list = allBots.filter(b => b.name !== playerState.nick);
+
+  if (scope === 'country') {
+    list = list.filter(b => b.country === playerState.country);
+  }
+
+  const playerItem = {
+    name: playerState.nick || 'Player',
+    country: playerState.country,
+    avatar: playerState.avatar,
+    score: playerState.rating,
+    isPlayer: true
+  };
+
+  list.push(playerItem);
+
+  list.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if (a.isPlayer) return 1;
+    if (b.isPlayer) return -1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const playerRankIndex = list.findIndex(item => item.isPlayer);
+  const playerRank = playerRankIndex >= 0 ? playerRankIndex + 1 : list.length;
+
+  let moreNeeded = 0;
+  let targetRank = playerRank;
+
+  if (playerRankIndex > 0) {
+    const playerAhead = list[playerRankIndex - 1];
+    moreNeeded = Math.max(0, (playerAhead.score + 1) - playerState.rating);
+    targetRank = playerRankIndex;
+  }
+
+  const maxScore = list.length > 0 ? Math.max(list[0].score, 1) : 1;
+
+  const items = list.map((item, idx) => {
+    const countryObj = getCountryByCode(item.country);
+    return {
+      rank: idx + 1,
+      name: item.name,
+      avatar: item.avatar,
+      countryCode: item.country,
+      flag: countryObj.flag,
+      score: item.score,
+      isPlayer: item.isPlayer,
+      progressPercent: Math.min(100, Math.max(4, (item.score / maxScore) * 100))
+    };
+  });
+
+  return {
+    items,
+    playerRank,
+    moreNeeded,
+    targetRank,
+    isLeader: playerRank === 1,
+    totalPlayers: list.length
+  };
+}
+
+// --- Module: js/audio.js ---
+class SoundEffects {
+  constructor() {
+    this.ctx = null;
+  }
+
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  playLimitWarning() {
+    if (typeof state !== 'undefined' && !state.soundEnabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.15);
+    } catch (e) {}
+  }
+
+  playRatingImpact() {
+    if (typeof state !== 'undefined' && !state.soundEnabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1100, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(750, this.ctx.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.06);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.06);
+    } catch (e) {}
+  }
+
+  playTopUpSuccess() {
+    if (typeof state !== 'undefined' && !state.soundEnabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, index) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + index * 0.08);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + index * 0.08);
+        gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + index * 0.08 + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(this.ctx.currentTime + index * 0.08);
+        osc.stop(this.ctx.currentTime + index * 0.08 + 0.15);
+      });
+    } catch (e) {}
+  }
+}
+
+const sounds = new SoundEffects();
+
+const _tma = typeof window !== 'undefined' && window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback
+  ? window.Telegram.WebApp.HapticFeedback
+  : null;
+
+const haptics = {
+  buttonClick() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    try {
+      if (_tma && typeof _tma.impactOccurred === 'function') {
+        _tma.impactOccurred('medium');
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(10);
+      }
+    } catch (e) {}
+  },
+
+  coinImpact() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    try {
+      if (_tma && typeof _tma.impactOccurred === 'function') {
+        _tma.impactOccurred('light');
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(6);
+      }
+    } catch (e) {}
+  },
+
+  light() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    try {
+      if (_tma && typeof _tma.selectionChanged === 'function') {
+        _tma.selectionChanged();
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(8);
+      }
+    } catch (e) {}
+  },
+
+  medium() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    try {
+      if (_tma && typeof _tma.impactOccurred === 'function') {
+        _tma.impactOccurred('medium');
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+    } catch (e) {}
+  },
+
+  heavy() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    try {
+      if (_tma && typeof _tma.impactOccurred === 'function') {
+        _tma.impactOccurred('heavy');
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([20, 25, 20]);
+      }
+    } catch (e) {}
+  },
+
+  warning() {
+    if (typeof state !== 'undefined' && !state.hapticsEnabled) return;
+    try {
+      if (_tma && typeof _tma.notificationOccurred === 'function') {
+        _tma.notificationOccurred('warning');
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([30, 40, 30]);
+      }
+    } catch (e) {}
+  }
+};
+
+// --- Module: js/state.js ---
+
+const STORAGE_KEYS = {
+  NICK: 'flutter.nick',
+  COUNTRY: 'flutter.country',
+  LANGUAGE: 'flutter.language',
+  AVATAR: 'flutter.avatar',
+  COINS: 'flutter.coins',
+  RATING: 'flutter.rating',
+  SOUND: 'flutter.sound_enabled',
+  HAPTICS: 'flutter.haptics_enabled',
+  RANK_WORLD: 'flutter.last_seen_rank_world',
+  RANK_COUNTRY: 'flutter.last_seen_rank_country_'
+};
+
+class AppState {
+  constructor() {
+    this.listeners = new Set();
+    this.loadState();
+  }
+
+  loadState() {
+    try {
+      const rawNick = localStorage.getItem(STORAGE_KEYS.NICK);
+      this.nick = rawNick ? JSON.parse(rawNick) : '';
+    } catch {
+      this.nick = localStorage.getItem(STORAGE_KEYS.NICK) || '';
+    }
+
+    try {
+      const rawCountry = localStorage.getItem(STORAGE_KEYS.COUNTRY);
+      this.country = rawCountry ? JSON.parse(rawCountry) : 'KZ';
+    } catch {
+      this.country = localStorage.getItem(STORAGE_KEYS.COUNTRY) || 'KZ';
+    }
+
+    try {
+      const rawLang = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+      this.language = rawLang ? JSON.parse(rawLang) : 'RU';
+    } catch {
+      this.language = localStorage.getItem(STORAGE_KEYS.LANGUAGE) || 'RU';
+    }
+
+    try {
+      const rawAvatar = localStorage.getItem(STORAGE_KEYS.AVATAR);
+      this.avatar = rawAvatar ? JSON.parse(rawAvatar) : '👑';
+    } catch {
+      this.avatar = localStorage.getItem(STORAGE_KEYS.AVATAR) || '👑';
+    }
+
+    const rawCoins = localStorage.getItem(STORAGE_KEYS.COINS);
+    this.coins = rawCoins !== null ? parseInt(rawCoins, 10) : 5;
+
+    const rawRating = localStorage.getItem(STORAGE_KEYS.RATING);
+    this.rating = rawRating !== null ? parseInt(rawRating, 10) : 0;
+
+    try {
+      const rawSound = localStorage.getItem(STORAGE_KEYS.SOUND);
+      this.soundEnabled = rawSound !== null ? JSON.parse(rawSound) : true;
+    } catch {
+      this.soundEnabled = true;
+    }
+
+    try {
+      const rawHaptics = localStorage.getItem(STORAGE_KEYS.HAPTICS);
+      this.hapticsEnabled = rawHaptics !== null ? JSON.parse(rawHaptics) : true;
+    } catch {
+      this.hapticsEnabled = true;
+    }
+
+    this.isInitialized = Boolean(this.nick && this.nick.trim().length >= 3);
+    this.bannerText = t(this.language, 'initialMessage');
+  }
+
+  saveState() {
+    localStorage.setItem(STORAGE_KEYS.NICK, JSON.stringify(this.nick));
+    localStorage.setItem(STORAGE_KEYS.COUNTRY, JSON.stringify(this.country));
+    localStorage.setItem(STORAGE_KEYS.LANGUAGE, JSON.stringify(this.language));
+    localStorage.setItem(STORAGE_KEYS.AVATAR, JSON.stringify(this.avatar));
+    localStorage.setItem(STORAGE_KEYS.COINS, this.coins.toString());
+    localStorage.setItem(STORAGE_KEYS.RATING, this.rating.toString());
+    localStorage.setItem(STORAGE_KEYS.SOUND, JSON.stringify(this.soundEnabled));
+    localStorage.setItem(STORAGE_KEYS.HAPTICS, JSON.stringify(this.hapticsEnabled));
+  }
+
+  subscribe(listener) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  notify() {
+    this.saveState();
+    for (const listener of this.listeners) {
+      listener(this);
+    }
+  }
+
+  toggleSound() {
+    this.soundEnabled = !this.soundEnabled;
+    this.notify();
+  }
+
+  toggleHaptics() {
+    this.hapticsEnabled = !this.hapticsEnabled;
+    this.notify();
+  }
+
+  setProfile(nick, country, language, avatar) {
+    this.nick = nick.trim();
+    this.country = country;
+    this.language = language;
+    this.avatar = avatar;
+    this.isInitialized = true;
+    this.bannerText = t(this.language, 'initialMessage');
+    this.notify();
+  }
+
+  setLanguage(lang) {
+    this.language = lang;
+    this.notify();
+  }
+
+  setCountry(country) {
+    this.country = country;
+    this.notify();
+  }
+
+  setAvatar(avatar) {
+    this.avatar = avatar;
+    this.notify();
+  }
+
+  spendCoin(newQuote) {
+    if (this.coins > 0) {
+      this.coins -= 1;
+      this.rating += 1;
+      if (newQuote) {
+        this.bannerText = newQuote;
+      }
+      this.notify();
+      return true;
+    }
+    return false;
+  }
+
+  addCoins(amount) {
+    this.coins += amount;
+    this.bannerText = t(this.language, 'balanceAdded');
+    this.notify();
+  }
+
+  resetProfile() {
+    localStorage.clear();
+    this.nick = '';
+    this.country = 'KZ';
+    this.language = 'RU';
+    this.avatar = '👑';
+    this.coins = 5;
+    this.rating = 0;
+    this.soundEnabled = true;
+    this.hapticsEnabled = true;
+    this.isInitialized = false;
+    this.bannerText = t(this.language, 'initialMessage');
+    this.notify();
+  }
+}
+
+const state = new AppState();
+
+// --- Module: js/app.js ---
+const AVATARS = ['👑', '🔥', '💎', '🚀', '🦁', '🐉', '🤑', '⚡'];
+
+class App {
+  constructor() {
+    this.currentLeaderboardTab = 'world';
+    this.selectedSetupAvatar = state.avatar || '👑';
+    this.lastClickTime = 0;
+    this.comboStreak = 0;
+    this.speedGlowTimer = null;
+    this.initElements();
+    this.bindEvents();
+    this.render();
+    state.subscribe(() => this.render());
+    this.registerServiceWorker();
+  }
+
+  registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  }
+
+  initElements() {
+    this.setupScreen = document.getElementById('setup-screen');
+    this.gameScreen = document.getElementById('game-screen');
+
+    this.appTitle = document.getElementById('app-title');
+    this.setupSubtitle = document.getElementById('setup-subtitle');
+    this.nickInput = document.getElementById('nick-input');
+    this.charCount = document.getElementById('char-count');
+    this.setupCountryBtn = document.getElementById('setup-country-btn');
+    this.setupCountryText = document.getElementById('setup-country-text');
+    this.setupLangBtn = document.getElementById('setup-lang-btn');
+    this.setupLangText = document.getElementById('setup-lang-text');
+    this.avatarLabel = document.getElementById('avatar-label');
+    this.avatarsGrid = document.getElementById('avatars-grid');
+    this.startGameBtn = document.getElementById('start-game-btn');
+    this.setupFooterHint = document.getElementById('setup-footer-hint');
+
+    this.menuBtn = document.getElementById('menu-btn');
+    this.ratingPill = document.getElementById('rating-pill');
+    this.ratingPillText = document.getElementById('rating-pill-text');
+    this.coinsPill = document.getElementById('coins-pill');
+    this.coinsPillText = document.getElementById('coins-pill-text');
+    this.motivationalQuote = document.getElementById('motivational-quote');
+    this.wasteBtnRing = document.getElementById('waste-btn-ring');
+    this.wasteBtn = document.getElementById('waste-btn');
+    this.wasteBtnText = document.getElementById('waste-btn-text');
+
+    this.leaderboardModal = document.getElementById('leaderboard-modal');
+    this.leaderboardTitle = document.getElementById('leaderboard-title');
+    this.leaderboardClose = document.getElementById('leaderboard-close');
+    this.tabWorld = document.getElementById('tab-world');
+    this.tabCountry = document.getElementById('tab-country');
+    this.leaderboardSubhead = document.getElementById('leaderboard-subhead');
+    this.leaderboardList = document.getElementById('leaderboard-list');
+
+    this.paywallModal = document.getElementById('paywall-modal');
+    this.paywallClose = document.getElementById('paywall-close');
+    this.paywallTitle = document.getElementById('paywall-title');
+    this.paywallBody = document.getElementById('paywall-body');
+    this.paywall100Btn = document.getElementById('paywall-100-btn');
+    this.paywall100Tag = document.getElementById('paywall-100-tag');
+    this.paywall500Btn = document.getElementById('paywall-500-btn');
+    this.paywall500Tag = document.getElementById('paywall-500-tag');
+
+    this.topUpModal = document.getElementById('topup-modal');
+    this.topUpClose = document.getElementById('topup-close');
+    this.topUpTitle = document.getElementById('topup-title');
+    this.topUpBody = document.getElementById('topup-body');
+    this.topUpCancelBtn = document.getElementById('topup-cancel-btn');
+    this.topUpAddBtn = document.getElementById('topup-add-btn');
+
+    this.countryModal = document.getElementById('country-modal');
+    this.countryClose = document.getElementById('country-close');
+    this.countrySearch = document.getElementById('country-search');
+    this.countryList = document.getElementById('country-list');
+
+    this.langModal = document.getElementById('lang-modal');
+    this.langClose = document.getElementById('lang-close');
+    this.langSearch = document.getElementById('lang-search');
+    this.langList = document.getElementById('lang-list');
+
+    this.avatarModal = document.getElementById('avatar-modal');
+    this.avatarModalClose = document.getElementById('avatar-modal-close');
+    this.avatarModalTitle = document.getElementById('avatar-modal-title');
+    this.avatarModalGrid = document.getElementById('avatar-modal-grid');
+
+    this.drawerOverlay = document.getElementById('drawer-overlay');
+    this.drawerAvatar = document.getElementById('drawer-avatar');
+    this.drawerNick = document.getElementById('drawer-nick');
+    this.drawerMeta = document.getElementById('drawer-meta');
+    this.drawerSoundBtn = document.getElementById('drawer-sound-btn');
+    this.drawerSoundText = document.getElementById('drawer-sound-text');
+    this.drawerSoundStatus = document.getElementById('drawer-sound-status');
+    this.drawerHapticsBtn = document.getElementById('drawer-haptics-btn');
+    this.drawerHapticsText = document.getElementById('drawer-haptics-text');
+    this.drawerHapticsStatus = document.getElementById('drawer-haptics-status');
+    this.drawerRatingBtn = document.getElementById('drawer-rating-btn');
+    this.drawerTopUpBtn = document.getElementById('drawer-topup-btn');
+    this.drawerLangBtn = document.getElementById('drawer-lang-btn');
+    this.drawerCountryBtn = document.getElementById('drawer-country-btn');
+    this.drawerAvatarBtn = document.getElementById('drawer-avatar-btn');
+    this.drawerResetBtn = document.getElementById('drawer-reset-btn');
+  }
+
+  bindEvents() {
+    if (this.nickInput) {
+      this.nickInput.addEventListener('input', () => {
+        const val = this.nickInput.value;
+        const remaining = 16 - val.length;
+        if (this.charCount) {
+          this.charCount.textContent = `${Math.max(0, remaining)} characters remaining`;
+        }
+        if (this.startGameBtn) {
+          this.startGameBtn.disabled = val.trim().length < 3;
+        }
+      });
+      this.nickInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !this.startGameBtn.disabled) {
+          this.startGameBtn.click();
+        }
+      });
+    }
+
+    if (this.setupCountryBtn) {
+      this.setupCountryBtn.addEventListener('click', () => {
+        haptics.light();
+        this.openCountryModal();
+      });
+    }
+    if (this.setupLangBtn) {
+      this.setupLangBtn.addEventListener('click', () => {
+        haptics.light();
+        this.openLangModal();
+      });
+    }
+    if (this.startGameBtn) {
+      this.startGameBtn.addEventListener('click', () => {
+        haptics.light();
+        const nick = this.nickInput ? this.nickInput.value.trim() : '';
+        if (nick.length >= 3) {
+          state.setProfile(nick, state.country, state.language, this.selectedSetupAvatar);
+        }
+      });
+    }
+
+    if (this.wasteBtn) {
+      this.wasteBtn.addEventListener('click', (e) => this.handleWasteClick(e));
+    }
+    if (this.ratingPill) {
+      this.ratingPill.addEventListener('click', () => {
+        haptics.light();
+        this.openLeaderboardModal();
+      });
+    }
+    if (this.coinsPill) {
+      this.coinsPill.addEventListener('click', () => {
+        haptics.light();
+        this.openTopUpModal();
+      });
+    }
+    if (this.menuBtn) {
+      this.menuBtn.addEventListener('click', () => {
+        haptics.light();
+        this.openDrawer();
+      });
+    }
+
+    if (this.drawerOverlay) {
+      this.drawerOverlay.addEventListener('click', (e) => {
+        if (e.target === this.drawerOverlay) this.closeDrawer();
+      });
+    }
+    if (this.drawerSoundBtn) {
+      this.drawerSoundBtn.addEventListener('click', () => {
+        haptics.light();
+        state.toggleSound();
+      });
+    }
+    if (this.drawerHapticsBtn) {
+      this.drawerHapticsBtn.addEventListener('click', () => {
+        state.toggleHaptics();
+        haptics.light();
+      });
+    }
+    if (this.drawerRatingBtn) {
+      this.drawerRatingBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openLeaderboardModal();
+      });
+    }
+    if (this.drawerTopUpBtn) {
+      this.drawerTopUpBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openTopUpModal();
+      });
+    }
+    if (this.drawerLangBtn) {
+      this.drawerLangBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openLangModal();
+      });
+    }
+    if (this.drawerCountryBtn) {
+      this.drawerCountryBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openCountryModal();
+      });
+    }
+    if (this.drawerAvatarBtn) {
+      this.drawerAvatarBtn.addEventListener('click', () => {
+        haptics.light();
+        this.closeDrawer();
+        this.openAvatarModal();
+      });
+    }
+    if (this.drawerResetBtn) {
+      this.drawerResetBtn.addEventListener('click', () => {
+        haptics.warning();
+        this.closeDrawer();
+        state.resetProfile();
+        if (this.nickInput) this.nickInput.value = '';
+        this.selectedSetupAvatar = '👑';
+        this.renderAvatarsGrid();
+      });
+    }
+
+    if (this.leaderboardClose) {
+      this.leaderboardClose.addEventListener('click', () => this.closeModal(this.leaderboardModal));
+    }
+    if (this.tabWorld) {
+      this.tabWorld.addEventListener('click', () => {
+        haptics.light();
+        this.currentLeaderboardTab = 'world';
+        if (this.leaderboardList) this.leaderboardList.scrollTop = 0;
+        this.renderLeaderboard();
+      });
+    }
+    if (this.tabCountry) {
+      this.tabCountry.addEventListener('click', () => {
+        haptics.light();
+        this.currentLeaderboardTab = 'country';
+        if (this.leaderboardList) this.leaderboardList.scrollTop = 0;
+        this.renderLeaderboard();
+      });
+    }
+
+    if (this.paywallClose) {
+      this.paywallClose.addEventListener('click', () => this.closeModal(this.paywallModal));
+    }
+    if (this.paywall100Btn) {
+      this.paywall100Btn.addEventListener('click', () => {
+        haptics.heavy();
+        sounds.playTopUpSuccess();
+        state.addCoins(100);
+        this.closeModal(this.paywallModal);
+      });
+    }
+    if (this.paywall500Btn) {
+      this.paywall500Btn.addEventListener('click', () => {
+        haptics.heavy();
+        sounds.playTopUpSuccess();
+        state.addCoins(500);
+        this.closeModal(this.paywallModal);
+      });
+    }
+
+    if (this.topUpClose) {
+      this.topUpClose.addEventListener('click', () => this.closeModal(this.topUpModal));
+    }
+    if (this.topUpCancelBtn) {
+      this.topUpCancelBtn.addEventListener('click', () => this.closeModal(this.topUpModal));
+    }
+    if (this.topUpAddBtn) {
+      this.topUpAddBtn.addEventListener('click', () => {
+        haptics.heavy();
+        sounds.playTopUpSuccess();
+        state.addCoins(100);
+        this.closeModal(this.topUpModal);
+      });
+    }
+
+    if (this.countryClose) {
+      this.countryClose.addEventListener('click', () => this.closeModal(this.countryModal));
+    }
+    if (this.countrySearch) {
+      this.countrySearch.addEventListener('input', (e) => this.renderCountryList(e.target.value));
+    }
+
+    if (this.langClose) {
+      this.langClose.addEventListener('click', () => this.closeModal(this.langModal));
+    }
+    if (this.langSearch) {
+      this.langSearch.addEventListener('input', (e) => this.renderLangList(e.target.value));
+    }
+
+    if (this.avatarModalClose) {
+      this.avatarModalClose.addEventListener('click', () => this.closeModal(this.avatarModal));
+    }
+
+    [this.leaderboardModal, this.paywallModal, this.topUpModal, this.countryModal, this.langModal, this.avatarModal].forEach(modal => {
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) this.closeModal(modal);
+        });
+      }
+    });
+  }
+
+  handleWasteClick(event) {
+    if (state.coins > 0) {
+      const now = performance.now();
+      const delta = now - this.lastClickTime;
+      if (delta < 500) {
+        this.comboStreak = Math.min(10, this.comboStreak + 1);
+      } else {
+        this.comboStreak = 1;
+      }
+      this.lastClickTime = now;
+
+      // Speed glow effect on rating pill during fast tapping
+      if (this.ratingPill) {
+        if (this.comboStreak >= 2) {
+          this.ratingPill.classList.add('speed-glow');
+          clearTimeout(this.speedGlowTimer);
+          this.speedGlowTimer = setTimeout(() => {
+            if (this.ratingPill) this.ratingPill.classList.remove('speed-glow');
+            this.comboStreak = 0;
+          }, 650);
+        }
+      }
+
+      haptics.buttonClick();
+      const quote = getRandomQuote(state.language);
+      state.spendCoin(quote);
+
+      if (this.wasteBtnRing) {
+        this.wasteBtnRing.classList.remove('clicked');
+        void this.wasteBtnRing.offsetWidth;
+        this.wasteBtnRing.classList.add('clicked');
+      }
+
+      this.spawnClickEffects(event);
+    } else {
+      sounds.playLimitWarning();
+      haptics.warning();
+      this.openPaywallModal();
+    }
+  }
+
+  spawnClickEffects(event) {
+    try {
+      const rect = this.wasteBtn ? this.wasteBtn.getBoundingClientRect() : { left: window.innerWidth / 2 - 40, top: window.innerHeight / 2 - 40, width: 80, height: 80 };
+      const touchX = event && event.touches && event.touches[0] ? event.touches[0].clientX : null;
+      const touchY = event && event.touches && event.touches[0] ? event.touches[0].clientY : null;
+      const changedX = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientX : null;
+      const changedY = event && event.changedTouches && event.changedTouches[0] ? event.changedTouches[0].clientY : null;
+
+      const rawX = event && event.clientX ? event.clientX : (touchX || changedX);
+      const rawY = event && event.clientY ? event.clientY : (touchY || changedY);
+
+      const startX = rawX || (rect.left + rect.width / 2);
+      const startY = rawY || (rect.top + rect.height / 2);
+
+      // 1. Spawn +1 floating text
+      this.spawnFloatingText(startX, startY);
+
+      // 2. Spawn tossed 3D coin to rating pill
+      this.spawnFlyingCoin(startX, startY);
+    } catch (e) {
+      console.error('Error spawning click effects:', e);
+    }
+  }
+
+  spawnFloatingText(startX, startY) {
+    try {
+      const particle = document.createElement('div');
+      particle.className = 'floating-particle';
+      particle.textContent = '+1';
+      particle.style.left = `${startX}px`;
+      particle.style.top = `${startY}px`;
+      document.body.appendChild(particle);
+
+      const randX = (Math.random() - 0.5) * 36;
+      const anim = particle.animate([
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.6)', opacity: 0 },
+        { transform: 'translate3d(-50%, calc(-50% - 18px), 0) scale(1.3)', opacity: 1, offset: 0.18 },
+        { transform: `translate3d(calc(-50% + ${randX}px), calc(-50% - 70px), 0) scale(1)`, opacity: 0, offset: 1.0 }
+      ], {
+        duration: 550,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => particle.remove();
+    } catch (e) {}
+  }
+
+  spawnFlyingCoin(startX, startY) {
+    try {
+      if (!this.ratingPill) return;
+      const targetRect = this.ratingPill.getBoundingClientRect();
+      const targetX = targetRect.left + targetRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2;
+
+      const isCombo = this.comboStreak >= 2;
+      // High-speed energetic flight: 260ms down to 170ms on high combo!
+      const duration = Math.max(170, 260 - this.comboStreak * 10);
+
+      const coinEl = document.createElement('div');
+      coinEl.className = `flying-coin-wrapper ${isCombo ? 'combo-streak' : ''}`;
+      coinEl.innerHTML = `
+        <div class="flying-coin-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="#141418" stroke="#f59e0b" stroke-width="9"/>
+            <circle cx="50" cy="50" r="35" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="4,4"/>
+            <text x="50" y="65" font-size="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" fill="#f59e0b" text-anchor="middle">W</text>
+          </svg>
+        </div>
+      `;
+
+      document.body.appendChild(coinEl);
+
+      const tossApexY = Math.min(startY - (55 + Math.random() * 35), (startY + targetY) / 2);
+      const tossScatterX = startX + (Math.random() - 0.5) * 45;
+
+      const midX = (tossScatterX + targetX) / 2 + (Math.random() - 0.5) * 25;
+      const midY = (tossApexY + targetY) / 2 - 15;
+
+      const fullSpins = 2 + Math.floor(Math.random() * 2);
+      const totalDegY = fullSpins * 360;
+      const wobbleZ = (Math.random() - 0.5) * 25;
+
+      const anim = coinEl.animate([
+        {
+          transform: `translate3d(${startX - 19}px, ${startY - 19}px, 0) scale(0.6) rotateY(0deg) rotateZ(0deg)`,
+          opacity: 0
+        },
+        {
+          transform: `translate3d(${tossScatterX - 19}px, ${tossApexY - 19}px, 0) scale(1.3) rotateY(360deg) rotateZ(${wobbleZ}deg)`,
+          opacity: 1,
+          offset: 0.16
+        },
+        {
+          transform: `translate3d(${midX - 19}px, ${midY - 19}px, 0) scale(1.0) rotateY(${totalDegY * 0.65}deg) rotateZ(${wobbleZ * 0.4}deg)`,
+          opacity: 1,
+          offset: 0.55
+        },
+        {
+          transform: `translate3d(${targetX * 0.94 + startX * 0.06 - 19}px, ${targetY * 0.94 + startY * 0.06 - 19}px, 0) scale(0.65) rotateY(${totalDegY * 0.92}deg) rotateZ(0deg)`,
+          opacity: 0.95,
+          offset: 0.85
+        },
+        {
+          transform: `translate3d(${targetX - 19}px, ${targetY - 19}px, 0) scale(0.15) rotateY(${totalDegY}deg) rotateZ(0deg)`,
+          opacity: 0,
+          offset: 1.0
+        }
+      ], {
+        duration: duration,
+        easing: 'cubic-bezier(0.12, 0.95, 0.25, 1)',
+        fill: 'forwards'
+      });
+
+      anim.onfinish = () => {
+        coinEl.remove();
+        this.triggerRatingImpact(targetX, targetY);
+      };
+    } catch (e) {}
+  }
+
+  triggerRatingImpact(targetX, targetY) {
+    if (!this.ratingPill) return;
+
+    sounds.playRatingImpact();
+    haptics.coinImpact();
+
+    // Instant snappy pulse bounce on rating pill
+    this.ratingPill.classList.remove('rating-pill-impact');
+    void this.ratingPill.offsetWidth;
+    this.ratingPill.classList.add('rating-pill-impact');
+
+    // Spawn 4 fast micro sparkles around target
+    for (let i = 0; i < 4; i++) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'rating-sparkle';
+      sparkle.style.left = `${targetX}px`;
+      sparkle.style.top = `${targetY}px`;
+      document.body.appendChild(sparkle);
+
+      const angle = (i / 4) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const dist = 10 + Math.random() * 12;
+      const sparkX = Math.cos(angle) * dist;
+      const sparkY = Math.sin(angle) * dist;
+
+      const sparkAnim = sparkle.animate([
+        { transform: 'translate3d(-50%, -50%, 0) scale(0.4)', opacity: 1 },
+        { transform: `translate3d(calc(-50% + ${sparkX}px), calc(-50% + ${sparkY}px), 0) scale(1.2)`, opacity: 0.9, offset: 0.35 },
+        { transform: `translate3d(calc(-50% + ${sparkX * 1.2}px), calc(-50% + ${sparkY * 1.2}px), 0) scale(0)`, opacity: 0, offset: 1.0 }
+      ], {
+        duration: 130,
+        easing: 'ease-out',
+        fill: 'forwards'
+      });
+
+      sparkAnim.onfinish = () => sparkle.remove();
+    }
+  }
+
+  render() {
+    const lang = state.language;
+    const country = getCountryByCode(state.country);
+
+    if (!state.isInitialized) {
+      if (this.setupScreen) this.setupScreen.classList.add('active');
+      if (this.gameScreen) this.gameScreen.classList.remove('active');
+    } else {
+      if (this.setupScreen) this.setupScreen.classList.remove('active');
+      if (this.gameScreen) this.gameScreen.classList.add('active');
+    }
+
+    if (this.appTitle) this.appTitle.textContent = 'MONEY WASTER';
+    if (this.setupSubtitle) this.setupSubtitle.textContent = t(lang, 'profileTitle');
+    if (this.nickInput) this.nickInput.placeholder = t(lang, 'nickHint');
+    if (this.setupCountryText) this.setupCountryText.innerHTML = `${t(lang, 'country')}: ${getCountryFlagImg(country.code)} ${country.name}`;
+    if (this.setupLangText) {
+      const langObj = LANGUAGES.find(l => l.code === lang);
+      this.setupLangText.textContent = `${t(lang, 'language')}: ${langObj ? langObj.name : lang}`;
+    }
+    if (this.avatarLabel) this.avatarLabel.textContent = t(lang, 'avatar');
+    if (this.startGameBtn) this.startGameBtn.textContent = t(lang, 'start');
+    if (this.setupFooterHint) this.setupFooterHint.textContent = t(lang, 'setupHint');
+    if (this.charCount && this.nickInput) {
+      const remaining = 16 - this.nickInput.value.length;
+      this.charCount.textContent = `${Math.max(0, remaining)} characters remaining`;
+    }
+
+    this.renderAvatarsGrid();
+
+    if (this.ratingPillText) this.ratingPillText.textContent = `${t(lang, 'rating')}: ${state.rating}`;
+    if (this.coinsPillText) this.coinsPillText.textContent = state.coins.toString();
+    if (this.motivationalQuote) this.motivationalQuote.textContent = state.bannerText;
+
+    if (this.drawerAvatar) this.drawerAvatar.textContent = state.avatar;
+    if (this.drawerNick) this.drawerNick.textContent = state.nick || 'Player';
+    if (this.drawerMeta) this.drawerMeta.textContent = `${state.country} · ${state.language}`;
+    if (this.drawerSoundText) this.drawerSoundText.textContent = t(lang, 'sound');
+    if (this.drawerSoundStatus) this.drawerSoundStatus.classList.toggle('active', Boolean(state.soundEnabled));
+    if (this.drawerHapticsText) this.drawerHapticsText.textContent = t(lang, 'haptics');
+    if (this.drawerHapticsStatus) this.drawerHapticsStatus.classList.toggle('active', Boolean(state.hapticsEnabled));
+    if (this.drawerRatingBtn) this.drawerRatingBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'rating');
+    if (this.drawerTopUpBtn) this.drawerTopUpBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'topUpTitle');
+    if (this.drawerLangBtn) this.drawerLangBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'appLanguage');
+    if (this.drawerCountryBtn) this.drawerCountryBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'country');
+    if (this.drawerAvatarBtn) this.drawerAvatarBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'changeAvatar');
+    if (this.drawerResetBtn) this.drawerResetBtn.querySelector('.drawer-menu-text').textContent = t(lang, 'resetProfile');
+
+    if (this.leaderboardTitle) this.leaderboardTitle.textContent = t(lang, 'ratingTitle');
+    if (this.tabWorld) this.tabWorld.textContent = t(lang, 'world');
+    if (this.tabCountry) this.tabCountry.textContent = `${t(lang, 'countryTab')} · ${state.country}`;
+
+    if (this.paywallTitle) {
+      const titleSpan = this.paywallTitle.querySelector('span');
+      if (titleSpan) titleSpan.textContent = t(lang, 'paywallTitle').replace('🚫 ', '');
+      else this.paywallTitle.textContent = t(lang, 'paywallTitle').replace('🚫 ', '');
+    }
+    if (this.paywallBody) this.paywallBody.textContent = t(lang, 'paywallBody');
+    if (this.paywall100Btn) {
+      const amtSpan = this.paywall100Btn.querySelector('.package-amount span');
+      if (amtSpan) amtSpan.textContent = t(lang, 'coins100');
+    }
+    if (this.paywall100Tag) {
+      const tagSpan = this.paywall100Tag.querySelector('span');
+      if (tagSpan) tagSpan.textContent = t(lang, 'popular').replace('🔥 ', '');
+    }
+    if (this.paywall500Btn) {
+      const amtSpan = this.paywall500Btn.querySelector('.package-amount span');
+      if (amtSpan) amtSpan.textContent = t(lang, 'coins500');
+    }
+    if (this.paywall500Tag) {
+      const tagSpan = this.paywall500Tag.querySelector('span');
+      if (tagSpan) tagSpan.textContent = t(lang, 'valueDeal').replace('💎 ', '');
+    }
+
+    if (this.topUpTitle) this.topUpTitle.textContent = t(lang, 'topUpTitle');
+    if (this.topUpBody) this.topUpBody.textContent = t(lang, 'topUpBody');
+    if (this.topUpCancelBtn) this.topUpCancelBtn.textContent = t(lang, 'cancel');
+    if (this.topUpAddBtn) {
+      const addSpan = this.topUpAddBtn.querySelector('span');
+      if (addSpan) addSpan.textContent = t(lang, 'add100Coins');
+      else this.topUpAddBtn.textContent = t(lang, 'add100Coins');
+    }
+
+    if (this.avatarModalTitle) this.avatarModalTitle.textContent = t(lang, 'avatar');
+  }
+
+  renderAvatarsGrid() {
+    if (!this.avatarsGrid) return;
+    this.avatarsGrid.innerHTML = '';
+    AVATARS.forEach((av) => {
+      const btn = document.createElement('button');
+      btn.className = `avatar-choice ${this.selectedSetupAvatar === av ? 'selected' : ''}`;
+      btn.textContent = av;
+      btn.type = 'button';
+      btn.addEventListener('click', () => {
+        haptics.light();
+        this.selectedSetupAvatar = av;
+        this.renderAvatarsGrid();
+      });
+      this.avatarsGrid.appendChild(btn);
+    });
+  }
+
+  openLeaderboardModal() {
+    if (this.leaderboardList) this.leaderboardList.scrollTop = 0;
+    this.renderLeaderboard();
+    this.openModal(this.leaderboardModal);
+  }
+
+  renderLeaderboard() {
+    const lang = state.language;
+    const data = getLeaderboardData(this.currentLeaderboardTab, state);
+
+    if (this.tabWorld) this.tabWorld.classList.toggle('active', this.currentLeaderboardTab === 'world');
+    if (this.tabCountry) this.tabCountry.classList.toggle('active', this.currentLeaderboardTab === 'country');
+
+    if (this.leaderboardSubhead) {
+      if (data.isLeader) {
+        this.leaderboardSubhead.textContent = t(lang, 'leader');
+      } else {
+        this.leaderboardSubhead.textContent = `${t(lang, 'moreTo')} ${data.moreNeeded} → #${data.targetRank}`;
+      }
+    }
+
+    if (!this.leaderboardList) return;
+    this.leaderboardList.innerHTML = '';
+    data.items.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = `leaderboard-row ${item.isPlayer ? 'is-player' : ''}`;
+      row.innerHTML = `
+        <div class="leaderboard-row-content">
+          <div class="leaderboard-left">
+            <span class="rank-badge">#${item.rank}</span>
+            <span class="avatar-icon">${item.avatar}</span>
+            <span class="leaderboard-name">${item.name} <span>${getCountryFlagImg(item.countryCode)}</span></span>
+          </div>
+          <span class="leaderboard-score">${item.score} WASTE</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-bar" style="width: ${item.progressPercent}%"></div>
+        </div>
+      `;
+      this.leaderboardList.appendChild(row);
+    });
+    bindScrollMask(this.leaderboardList);
+    requestAnimationFrame(() => updateScrollMask(this.leaderboardList));
+  }
+
+  openTopUpModal() {
+    this.openModal(this.topUpModal);
+  }
+
+  openPaywallModal() {
+    this.openModal(this.paywallModal);
+  }
+
+  openCountryModal() {
+    if (this.countrySearch) {
+      this.countrySearch.value = '';
+      this.countrySearch.placeholder = t(state.language, 'search');
+    }
+    if (this.countryList) this.countryList.scrollTop = 0;
+    this.renderCountryList('');
+    this.openModal(this.countryModal);
+  }
+
+  renderCountryList(query) {
+    if (!this.countryList) return;
+    const q = query.toLowerCase().trim();
+    const filtered = COUNTRIES.filter(c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q));
+
+    this.countryList.innerHTML = '';
+    filtered.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = `option-item ${state.country === c.code ? 'selected' : ''}`;
+      btn.innerHTML = `<span style="display: flex; align-items: center; gap: 8px;">${getCountryFlagImg(c.code)} ${c.name}</span> <span style="opacity: 0.6">${c.code}</span>`;
+      btn.addEventListener('click', () => {
+        haptics.light();
+        state.setCountry(c.code);
+        this.closeModal(this.countryModal);
+      });
+      this.countryList.appendChild(btn);
+    });
+    bindScrollMask(this.countryList);
+    requestAnimationFrame(() => updateScrollMask(this.countryList));
+  }
+
+  openLangModal() {
+    if (this.langSearch) {
+      this.langSearch.value = '';
+      this.langSearch.placeholder = t(state.language, 'search');
+    }
+    if (this.langList) this.langList.scrollTop = 0;
+    this.renderLangList('');
+    this.openModal(this.langModal);
+  }
+
+  renderLangList(query) {
+    if (!this.langList) return;
+    const q = query.toLowerCase().trim();
+    const filtered = LANGUAGES.filter(l => l.name.toLowerCase().includes(q) || l.code.toLowerCase().includes(q));
+
+    this.langList.innerHTML = '';
+    filtered.forEach(l => {
+      const btn = document.createElement('button');
+      btn.className = `option-item ${state.language === l.code ? 'selected' : ''}`;
+      btn.innerHTML = `<span>${l.name}</span> <span style="opacity: 0.6">${l.code}</span>`;
+      btn.addEventListener('click', () => {
+        haptics.light();
+        state.setLanguage(l.code);
+        this.closeModal(this.langModal);
+      });
+      this.langList.appendChild(btn);
+    });
+    bindScrollMask(this.langList);
+    requestAnimationFrame(() => updateScrollMask(this.langList));
+  }
+
+  openAvatarModal() {
+    if (!this.avatarModalGrid) return;
+    this.avatarModalGrid.innerHTML = '';
+    AVATARS.forEach(av => {
+      const btn = document.createElement('button');
+      btn.className = `avatar-choice ${state.avatar === av ? 'selected' : ''}`;
+      btn.textContent = av;
+      btn.addEventListener('click', () => {
+        haptics.light();
+        state.setAvatar(av);
+        this.closeModal(this.avatarModal);
+      });
+      this.avatarModalGrid.appendChild(btn);
+    });
+    this.openModal(this.avatarModal);
+  }
+
+  openDrawer() {
+    if (this.drawerOverlay) this.drawerOverlay.classList.add('active');
+  }
+
+  closeDrawer() {
+    if (this.drawerOverlay) this.drawerOverlay.classList.remove('active');
+  }
+
+  openModal(modalEl) {
+    if (modalEl) {
+      modalEl.classList.add('active');
+      requestAnimationFrame(() => {
+        const scrollables = modalEl.querySelectorAll('.options-scroll-list, .leaderboard-list');
+        scrollables.forEach(el => {
+          bindScrollMask(el);
+          updateScrollMask(el);
+        });
+      });
+    }
+  }
+
+  closeModal(modalEl) {
+    if (modalEl) modalEl.classList.remove('active');
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => new App());
+} else {
+  new App();
+}
+
+})();
+</script>
+</body>
+</html>
